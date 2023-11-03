@@ -1,3 +1,18 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+app_login:
+    path: /login
+    controller: App\Controller\SecurityController::login
+
+app_logout:
+    path: /logout
+    controller: App\Controller\SecurityController::logout
+
+get_users:
+    path: /getuser
+    controller: App\Controller\UserController::getALL
+
+update_label:
+    path: /updatelabel
+    controller: App\Controller\UserController::updateLabel
