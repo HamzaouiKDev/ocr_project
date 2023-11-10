@@ -6,7 +6,8 @@ var dataTable = $('#sample_data').DataTable({
   processing: true,
   serverSide: true,
   order:[],
-  scroll: true,
+  scrollX: true,
+  paging:false,
   ajax: {
     url: '/getuser',
     type: "POST",
@@ -16,17 +17,11 @@ var dataTable = $('#sample_data').DataTable({
   // These are the column name variables that will be sent to the server
 columnDefs: [
     { "data": "id",   "targets": 0 },
-    { "data": "path",   "targets": 1 },
-    { "data": "matricule",  "targets": 2 },
-    { "data": "annee",  "targets": 3 },
-    { "data": "page",   "targets": 4 },
-    { "data": "ligne",   "targets": 5 },
-    { "data": "label",  "targets": 6 },
-    { "data": "notes",  "targets": 7 },
-    { "data": "value_n",   "targets": 8 },
-    { "data": "value_n1",   "targets": 9 },
-    { "data": "code",  "targets": 10 },
-    { "data": "type_page",  "targets": 11 },
+    { "data": "label",  "targets": 1 },
+    { "data": "notes",  "targets": 2 },
+    { "data": "value_n",   "targets": 3 },
+    { "data": "value_n1",   "targets": 4 },
+    { "data": "type_page",  "targets": 5 },
 
 
 ],
@@ -35,81 +30,40 @@ columnDefs: [
     $.each($('td', row), function(colIndex){
       if(colIndex == 1)
       {
-        $(this).attr('data-name', 'path');
-        $(this).attr('class', 'path');
-        $(this).attr('data-type', 'text');
-        $(this).attr('data-pk', data['id']);
-      }
-      if(colIndex == 2)
-      {
-        $(this).attr('data-name', 'matricule');
-        $(this).attr('class', 'matricule');
-        $(this).attr('data-type', 'text');
-        $(this).attr('data-pk',data['id']);
-      }
-      if(colIndex == 3)
-      {
-        $(this).attr('data-name', 'annee');
-        $(this).attr('class', 'annee');
-        $(this).attr('data-type','text');
-        $(this).attr('data-pk', data['id']);
-      }
-      if(colIndex == 4)
-      {
-        $(this).attr('data-name', 'page');
-        $(this).attr('class', 'page');
-        $(this).attr('data-type', 'text');
-        $(this).attr('data-pk', data['id']);
-      }
-      if(colIndex == 5)
-      {
-        $(this).attr('data-name', 'ligne');
-        $(this).attr('class', 'ligne');
-        $(this).attr('data-type', 'text');
-        $(this).attr('data-pk',data['id']);
-      }
-      if(colIndex == 6)
-      {
         $(this).attr('data-name', 'label');
         $(this).attr('class', 'label');
         $(this).attr('data-type', 'text');
         $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 7)
+      if(colIndex == 2)
       {
         $(this).attr('data-name', 'notes');
         $(this).attr('class', 'notes');
         $(this).attr('data-type', 'text');
-        $(this).attr('data-pk', data['id']);
+        $(this).attr('data-pk',data['id']);
       }
-      if(colIndex == 8)
+      if(colIndex == 3)
       {
         $(this).attr('data-name', 'value_n');
         $(this).attr('class', 'value_n');
-        $(this).attr('data-type', 'text');
-        $(this).attr('data-pk',data['id']);
+        $(this).attr('data-type','text');
+        $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 9)
+      if(colIndex == 4)
       {
         $(this).attr('data-name', 'value_n1');
         $(this).attr('class', 'value_n1');
         $(this).attr('data-type', 'text');
-        $(this).attr('data-pk',data['id']);
+        $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 10)
-      {
-        $(this).attr('data-name', 'code');
-        $(this).attr('class', 'code');
-        $(this).attr('data-type', 'text');
-        $(this).attr('data-pk',data['id']);
-      }
-      if(colIndex == 11)
+      if(colIndex == 5)
       {
         $(this).attr('data-name', 'type_page');
         $(this).attr('class', 'type_page');
-        $(this).attr('data-type', 'text');
+        $(this).attr('data-type', 'select');
         $(this).attr('data-pk',data['id']);
       }
+    
     });
   }
 });
@@ -128,20 +82,42 @@ $('#sample_data').editable({
   }
 });
 
-/*$('#sample_data').editable({
+$('#sample_data').editable({
   container:'body',
-  selector:'td.last_name',
-  url: '/updatelastname',
-  title:'Prénom',
+  selector:'td.notes',
+  url: '/updateNotes',
+  title:'Notes',
   type:'POST',
-  validate:function(value){
-    if($.trim(value) == '')
-    {
-      return 'Ce champ est obligatoire';
-    }
-  }
+ 
 });
 
+$('#sample_data').editable({
+  container:'body',
+  selector:'td.value_n',
+  url: '/updateAnneeN',
+  title:'Annee N',
+  type:'POST',
+ 
+});
+
+$('#sample_data').editable({
+  container:'body',
+  selector:'td.value_n1',
+  url: '/updateAnneeN1',
+  title:'Annee N-1',
+  type:'POST',
+ 
+});
+$('#sample_data').editable({
+  container:'body',
+  selector:'td.type_page',
+  url: '/updateTypePage',
+  title:'Type de la page',
+  type:'POST',
+  datatype:'json',
+  source:[{value: "BILAN", text: "BILAN"}, {value: "RESULTAT", text: "RESULTAT"},{value: "TRESORERIE", text: "TRESORERIE"}],
+});
+/*
 $('#sample_data').editable({
   container:'body',
   selector:'td.gender',

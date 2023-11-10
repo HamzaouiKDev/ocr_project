@@ -1,6 +1,6 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+index:
+    path: /ocr
+    controller: App\Controller\DefaultController::index
 app_login:
     path: /login
     controller: App\Controller\SecurityController::login
@@ -11,8 +11,25 @@ app_logout:
 
 get_users:
     path: /getuser
-    controller: App\Controller\UserController::getALL
+    controller: App\Controller\OcrController::getALL
 
 update_label:
     path: /updatelabel
-    controller: App\Controller\UserController::updateLabel
+    controller: App\Controller\OcrController::updateLabel
+
+update_notes:
+    path: /updateNotes
+    controller: App\Controller\OcrController::updateNotes
+
+update_annee_n:
+    path: /updateAnneeN
+    controller: App\Controller\OcrController::updateAnneeN
+
+update_annee_n1:
+    path: /updateAnneeN1
+    controller: App\Controller\OcrController::updateAnneeN1
+
+
+update_type_page:
+    path: /updateTypePage
+    controller: App\Controller\OcrController::updateTypePage
