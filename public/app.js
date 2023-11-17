@@ -2,18 +2,20 @@
 
 
 $(document).ready(function(){
-var dataTable = $('#sample_data').DataTable({
+const dataTable = $('#sample_data').DataTable({
   processing: true,
   serverSide: true,
   order:[],
   scrollX: true,
   paging:false,
+ 
   ajax: {
     url: '/getuser',
     type: "POST",
     dataSrc: "data"
  
         },
+        
   // These are the column name variables that will be sent to the server
 columnDefs: [
     { "data": "id",   "targets": 0 },
@@ -25,6 +27,7 @@ columnDefs: [
 
 
 ],
+
   createdRow:function(row, data, rowIndex)
   {
     $.each($('td', row), function(colIndex){
@@ -69,6 +72,7 @@ columnDefs: [
 });
 
 $('#sample_data').editable({
+  mode: 'inline',
   container:'body',
   selector:'td.label',
   url:'/updatelabel',
@@ -83,6 +87,7 @@ $('#sample_data').editable({
 });
 
 $('#sample_data').editable({
+  mode: 'inline',
   container:'body',
   selector:'td.notes',
   url: '/updateNotes',
@@ -92,6 +97,7 @@ $('#sample_data').editable({
 });
 
 $('#sample_data').editable({
+  mode: 'inline',
   container:'body',
   selector:'td.value_n',
   url: '/updateAnneeN',
@@ -101,6 +107,7 @@ $('#sample_data').editable({
 });
 
 $('#sample_data').editable({
+  mode: 'inline',
   container:'body',
   selector:'td.value_n1',
   url: '/updateAnneeN1',
@@ -109,13 +116,13 @@ $('#sample_data').editable({
  
 });
 $('#sample_data').editable({
+  mode: 'inline',
   container:'body',
   selector:'td.type_page',
   url: '/updateTypePage',
   title:'Type de la page',
   type:'POST',
-  datatype:'json',
-  source:[{value: "BILAN", text: "BILAN"}, {value: "RESULTAT", text: "RESULTAT"},{value: "TRESORERIE", text: "TRESORERIE"}],
+ 
 });
 /*
 $('#sample_data').editable({

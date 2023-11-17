@@ -3,7 +3,11 @@ var pdfUrl = 'pdf/pdf_file.pdf';
 // Options pour pdf.js
 var options = {
     // Placez ici toutes les options spécifiques que vous voulez
+
+    renderer: 'canvas',
+    pagemode: 'sidebar state'
 };
+
 
 // Récupérer une référence vers le canvas
 var canvas = document.getElementById('pdf-canvas');
@@ -14,7 +18,7 @@ pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
     return pdf.getPage(1);
 }).then(function(page) {
     // Configuration de l'échelle pour le rendu du canvas
-    var scale = 1.5;
+    var scale = 1;
     var viewport = page.getViewport({ scale: scale });
 
     // Récupérer le contexte du canvas
