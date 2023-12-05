@@ -9,12 +9,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\EntrepriseRepository;
 
 class OcrController extends AbstractController
 {
     #[Route('/ocr', name: 'app_ocr')]
-    public function index(): Response
+    public function index(EntrepriseRepository $entrepriseRepository): Response
     {
+        // selection de la premiere entreprise non valide (matricule et annee)
+        $entreprise= $entrepriseRepository->findFirstInvalid();
+        $matricule=$entreprise->getMatricule();
+        $annee=$entreprise->getAnnee();
+
+        
         return $this->render('ocr/index.html.twig', [
             'controller_name' => 'OcrController',
         ]);
@@ -22,6 +29,7 @@ class OcrController extends AbstractController
     #[Route('/getuser', name: 'get_users')]
     public function getALL(ManagerRegistry $doctrine)
     {
+        
         $result_ocr_Repository = $doctrine->getRepository(ResultOcr::class);
         $result_ocrs = $result_ocr_Repository->findBy(['matricule'=>'0002388V','annee'=>2020,'page'=>2]);
         $data = [];

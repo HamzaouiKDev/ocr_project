@@ -63,4 +63,18 @@ class ResultOcrRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+ // @return ResultOcr[] Returns an array of Test objects
+  
+   public function findByPageField($value): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.page = :val')
+            ->setParameter('val', $value)
+            ->orderBy('t.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }
