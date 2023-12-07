@@ -3,6 +3,15 @@
 {% block title %}Hello UserController!{% endblock %}
 
 {% block body %}
+<script>
+  
+  // Lecture des variables envoyees par symfony 
+
+  let matriculeJs= {{matricule|json_encode|raw}};
+ 
+  let anneeJs= {{annee|json_encode|raw}};
+ 
+</script>
 
           {% if app.user %}
           <div class="appBar">

@@ -33,3 +33,7 @@ update_annee_n1:
 update_type_page:
     path: /updateTypePage
     controller: App\Controller\OcrController::updateTypePage
+
+get_ligne_ocr:
+    path: /getLigneOcr/{matricule}/{annee}
+    controller: App\Controller\OcrController::getLigneOcr

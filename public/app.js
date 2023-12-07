@@ -2,18 +2,27 @@
 
 
 $(document).ready(function(){
-const dataTable = $('#sample_data').DataTable({
+  console.log(matriculeJs);
+  console.log(anneeJs);
+
+ $('#sample_data').DataTable({
   processing: true,
   serverSide: true,
   order:[],
   scrollX: true,
   paging:false,
+
+
+  //ajax: "{{path('get_users')}}",
  
   ajax: {
     url: '/getuser',
     type: "POST",
-    dataSrc: "data"
- 
+    dataSrc: "data",
+    data: function (d) {
+      d.param1=matriculeJs;
+      d.param2=anneeJs;
+    }
         },
         
   // These are the column name variables that will be sent to the server
