@@ -15,9 +15,18 @@
 
           {% if app.user %}
           <div class="appBar">
-           <div  class="message">
-           <p  class="font-weight-bold" >Bienvenue:  {{ app.user.userName }}</p>
-          </div>
+              <div  class="message">
+              <p  class="font-weight-bold" >Bienvenue:  {{ app.user.userName }}</p>
+              </div>
+              <div  class="matricule">
+                <p  class="font-weight-bold" >Matricule :  {{ matricule }}</p>
+              </div>
+              <div  class="annee">
+                <p  class="font-weight-bold" >Annee :  {{ annee }}</p>
+              </div>
+              <div  class="nbrpages">
+                <p  class="font-weight-bold" >Nombre de pages :  {{ nbrPages }}</p>
+              </div>
           <div class="deconnexion">  
            
           <a href="{{ path('app_logout') }}" class="btn btn-warning">Deconnexion</a>
@@ -38,6 +47,7 @@
                                   <thead>
                                     <tr>
                                     <th>ID</th>
+                                    <th>Code</th>
                                     <th>Label</th>
                                     <th>Notes</th>
                                     <th>Annee n</th>

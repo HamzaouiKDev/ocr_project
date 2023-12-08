@@ -2,9 +2,10 @@
 
 namespace App\Repository;
 
-use App\Entity\ResultOcr;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\TypePageOcr;
+use App\Repository\TypePageOcrRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Test>
@@ -14,11 +15,11 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method ResultOcr[]    findAll()
  * @method ResultOcr[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ResultOcrRepository extends ServiceEntityRepository
+class TypePageOcrRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ResultOcr::class);
+        parent::__construct($registry, TypePageOcr::class);
     }
 
     public function add(Test $entity, bool $flush = false): void
@@ -64,19 +65,9 @@ class ResultOcrRepository extends ServiceEntityRepository
 //        ;
 //    }
 
- // @return ResultOcr[] Returns an array of Test objects
+ 
   
-   public function findByPageField($value): array
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.page = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
+   
     public function findPages($matricule,$annee) :array
     {
         return $this->createQueryBuilder('e')

@@ -8,7 +8,7 @@
 	
 	float: left;
 	background-color: black;
-	flex-basis: 40%;
+	flex-basis: 30%;
 	padding: 50px;
 	
 }
@@ -16,7 +16,7 @@
 	padding: 30px;
 	float: left;
 	/*background-color: green;*/
-	flex-basis: 60%;
+	flex-basis: 70%;
 	
 }
 
@@ -38,4 +38,13 @@ background-color: white;
 }
 .message{
 	margin-left: 30px;
+	margin-right: 50px;
+}
+.matricule{
+
+	margin-right: 50px;
+}
+.annee{
+
+	margin-right: 50px;
 }

@@ -28,11 +28,12 @@ $(document).ready(function(){
   // These are the column name variables that will be sent to the server
 columnDefs: [
     { "data": "id",   "targets": 0 },
-    { "data": "label",  "targets": 1 },
-    { "data": "notes",  "targets": 2 },
-    { "data": "value_n",   "targets": 3 },
-    { "data": "value_n1",   "targets": 4 },
-    { "data": "type_page",  "targets": 5 },
+    { "data": "code",   "targets": 1 },
+    { "data": "label",  "targets": 2 },
+    { "data": "notes",  "targets": 3 },
+    { "data": "value_n",   "targets": 4 },
+    { "data": "value_n1",   "targets": 5 },
+    { "data": "type_page",  "targets": 6 },
 
 
 ],
@@ -42,33 +43,40 @@ columnDefs: [
     $.each($('td', row), function(colIndex){
       if(colIndex == 1)
       {
+        $(this).attr('data-name', 'code');
+        $(this).attr('class', 'code');
+        $(this).attr('data-type', 'text');
+        $(this).attr('data-pk', data['id']);
+      }
+      if(colIndex == 2)
+      {
         $(this).attr('data-name', 'label');
         $(this).attr('class', 'label');
         $(this).attr('data-type', 'text');
         $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 2)
+      if(colIndex == 3)
       {
         $(this).attr('data-name', 'notes');
         $(this).attr('class', 'notes');
         $(this).attr('data-type', 'text');
         $(this).attr('data-pk',data['id']);
       }
-      if(colIndex == 3)
+      if(colIndex == 4)
       {
         $(this).attr('data-name', 'value_n');
         $(this).attr('class', 'value_n');
         $(this).attr('data-type','text');
         $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 4)
+      if(colIndex == 5)
       {
         $(this).attr('data-name', 'value_n1');
         $(this).attr('class', 'value_n1');
         $(this).attr('data-type', 'text');
         $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 5)
+      if(colIndex == 6)
       {
         $(this).attr('data-name', 'type_page');
         $(this).attr('class', 'type_page');
@@ -77,6 +85,20 @@ columnDefs: [
       }
     
     });
+  }
+});
+$('#sample_data').editable({
+  mode: 'inline',
+  container:'body',
+  selector:'td.code',
+  url:'/updatecode',
+  title:'Code',
+  type:'POST',
+  validate:function(value){
+    if($.trim(value) == '')
+    {
+      return 'Ce champ est obligatoire ';
+    }
   }
 });
 

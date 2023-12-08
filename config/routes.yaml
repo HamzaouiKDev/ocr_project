@@ -13,6 +13,10 @@ get_users:
     path: /getuser
     controller: App\Controller\OcrController::getALL
 
+update_code:
+    path: /updatecode
+    controller: App\Controller\OcrController::updateCode
+
 update_label:
     path: /updatelabel
     controller: App\Controller\OcrController::updateLabel

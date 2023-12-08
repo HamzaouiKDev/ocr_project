@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\ResultOcr;
+use App\Repository\ResultOcrRepository;
 use App\Repository\EntrepriseRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\TypePageOcrRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,20 +17,33 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class OcrController extends AbstractController
 {
     #[Route('/ocr', name: 'app_ocr')]
-    public function index(EntrepriseRepository $entrepriseRepository): Response
+    public function index(EntrepriseRepository $entrepriseRepository,TypePageOcrRepository $typePageOcrRepository,Request $request): Response
     {
         // selection de la premiere entreprise non valide (matricule et annee)
         $entreprise= $entrepriseRepository->findFirstInvalid();
         $matricule=$entreprise->getMatricule();
         $annee=$entreprise->getAnnee();
 
-        // recuperer un tableau de page traite de bilan
+        // recuperer un tableau de pages du bilan
 
-        
+        $typePage=$typePageOcrRepository->findPages($matricule,$annee);
+        foreach($typePage as $ligne)
+        {
+            $pages[]=$ligne->getPage();
+        }
+        $nbrPages=count($pages);
+     
+        // Passer la variable en session
+
+        $session = $request->getSession();
+        $session->set('pages',$pages);
+
        
         return $this->render('ocr/index.html.twig', [
             'matricule' => $matricule,
-            'annee'=> $annee
+            'annee'=> $annee,
+            'pages'=>$pages,
+            'nbrPages'=>$nbrPages
         ]);
     }
 
@@ -44,6 +59,7 @@ class OcrController extends AbstractController
         foreach ($result_ocrs as $key => $result_ocr) {
             $data[] = [
                 'id' => $result_ocr->getId(),
+                'code'=>  $result_ocr->getCode(),
                 'label' => $result_ocr->getLabel(),
                 'notes' => $result_ocr->getNotes(),
                 'value_n' => $result_ocr->getValueN(),
@@ -76,6 +92,7 @@ class OcrController extends AbstractController
         foreach ($result_ocrs as $key => $result_ocr) {
             $data[] = [
                 'id' => $result_ocr->getId(),
+                'code' => $result_ocr->getCode(),
                 'label' => $result_ocr->getLabel(),
                 'notes' => $result_ocr->getNotes(),
                 'value_n' => $result_ocr->getValueN(),
@@ -88,6 +105,29 @@ class OcrController extends AbstractController
         return $this->json($data);
         //return new JsonResponse($data);
     }
+###################################################################################################################################
+    // Mise a jour de code
+##################################################################################################################################
+#[Route('/updatecode', name: 'update_code')]
+public function updateCode(ManagerRegistry $doctrine) :Response
+{
+    $id= $_POST['pk'];
+    $entityManager = $doctrine->getManager();
+    $resultocr = $entityManager->getRepository(ResultOcr::class)->find($id);
+
+    if (!$resultocr) {
+        throw $this->createNotFoundException(
+            'No ligne found for id '.$id
+        );
+    }
+
+    $resultocr->setCode($_POST["value"]);
+    $entityManager->flush();
+
+    return $this->redirectToRoute('app_ocr', [
+        'id' => $resultocr->getId()
+    ]);
+}
 ###################################################################################################################################
     // Mise a jour de label
 ##################################################################################################################################
