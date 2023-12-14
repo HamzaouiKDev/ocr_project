@@ -39,12 +39,45 @@ background-color: white;
 .message{
 	margin-left: 30px;
 	margin-right: 50px;
+	font-size:25px;
 }
 .matricule{
 
 	margin-right: 50px;
+	font-size:25px;
 }
 .annee{
 
 	margin-right: 50px;
+	font-size:25px;
+}
+.pages-cours{
+
+	margin-right: 50px;
+	font-size:25px;
+
+}
+.nbrpages{
+
+	font-size:25px;
+}
+
+
+/*#################################### Les bouttons ##############################################*/
+.btn {
+
+padding: 10px 20px;
+text-decoration: none;
+color:white;
+background-color: #007bff;
+border-radius: 5px;
+border: none;
+cursor: pointer;
+}
+.btn-primary {
+background-color:#007bff;
+
+}
+.btn:hover{
+	opacity:0.8;
 }

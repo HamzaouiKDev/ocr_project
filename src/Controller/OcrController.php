@@ -19,6 +19,7 @@ class OcrController extends AbstractController
     #[Route('/ocr', name: 'app_ocr')]
     public function index(EntrepriseRepository $entrepriseRepository,TypePageOcrRepository $typePageOcrRepository,Request $request): Response
     {
+        
         // selection de la premiere entreprise non valide (matricule et annee)
         $entreprise= $entrepriseRepository->findFirstInvalid();
         $matricule=$entreprise->getMatricule();
@@ -32,29 +33,47 @@ class OcrController extends AbstractController
             $pages[]=$ligne->getPage();
         }
         $nbrPages=count($pages);
+        
      
-        // Passer la variable en session
+        // Passer les variable en session
 
         $session = $request->getSession();
+        $session->set('matricule',$matricule);
+        $session->set('annee',$annee);
         $session->set('pages',$pages);
-
-       
-        return $this->render('ocr/index.html.twig', [
-            'matricule' => $matricule,
-            'annee'=> $annee,
-            'pages'=>$pages,
-            'nbrPages'=>$nbrPages
-        ]);
+        $session->set('pageEnCours',$pages[0]); 
+        $session->set('pageEnCoursIndex',0); 
+        $session->set('nbrPages',$nbrPages); 
+        $pdfUrl="pdf/pdf_file.pdf";
+        return $this->render('ocr/index.html.twig',['pdfUrl' =>$pdfUrl]);
     }
+// call page
+
+public function callPage(EntrepriseRepository $entrepriseRepository,TypePageOcrRepository $typePageOcrRepository,Request $request): Response
+{
+    $session = $request->getSession();
+    $page=$session->get('pages',$pages);
+    $session->set('pages',$pages);
+
+   
+    return $this->render('ocr/index.html.twig', [
+        'matricule' => $matricule,
+        'annee'=> $annee,
+        'pages'=>$pages,
+        'nbrPages'=>$nbrPages
+    ]);
+}
+
 
   // recuperer ocrResult par matricule et annee
   
   #[Route('/getLigneOcr/{matricule}/{annee}', name: 'ligne_ocr_show')]
   public function getLigneOcr(ManagerRegistry $doctrine, string $matricule, string $annee)
     {
-        
+        $page=6;
         $result_ocr_Repository = $doctrine->getRepository(ResultOcr::class);
-        $result_ocrs = $result_ocr_Repository->findBy(['matricule'=>$matricule,'annee'=>$annee]);
+        $result_ocrs = $result_ocr_Repository->findBy(['matricule'=>'0002388V','annee'=>$annee,'page'=>$page]);
+        dd($result_ocrs);
         $data = [];
         foreach ($result_ocrs as $key => $result_ocr) {
             $data[] = [
@@ -72,22 +91,55 @@ class OcrController extends AbstractController
         return $this->json($data);
         //return new JsonResponse($data);
     }
+###################################################################################################################################
+    // Acceder a la page suivante
+##################################################################################################################################
 
+#[Route('/suivant', name: 'get_page_suivante')]
+public function suivante(ManagerRegistry $doctrine,Request $request)
+{
+    $session = $request->getSession();
+    $index=$session->get('pageEnCoursIndex');
+    $pages=$session->get('pages'); 
+    $index++;
+    $pageencours=$pages[$index];
+    $session->set('pageEnCoursIndex',$index);
+    $session->set('pageEnCours',$pageencours);
+    return $this->render('ocr/index.html.twig');
+    
+}
 
+###################################################################################################################################
+    // Acceder a la page precedente
+##################################################################################################################################
 
+#[Route('/precedent', name: 'get_page_precedente')]
+public function precedente(ManagerRegistry $doctrine,Request $request)
+{
+    $session = $request->getSession();
+    $index=$session->get('pageEnCoursIndex');
+    $pages=$session->get('pages'); 
+    $index--;
+    $pageencours=$pages[$index];
+    $session->set('pageEnCoursIndex',$index);
+    $session->set('pageEnCours',$pageencours);
+    return $this->render('ocr/index.html.twig');
+    
+}
 
+###################################################################################################################################
+    //Fonction pour recuperer une page
+##################################################################################################################################
 
-
-    #[Route('/getuser', name: 'get_users')]
-    public function getALL(ManagerRegistry $doctrine,Request $request)
+    #[Route('/getpage', name: 'get_page')]
+    public function getPage(ManagerRegistry $doctrine,Request $request)
     {
-     
-        $mat = $request->request->get('param1');
-        $annee = $request->request->get('param2');
-        
-        $var="0889422E";
+        $session = $request->getSession();
+        $index=$session->get('pageEnCoursIndex');
+        $pages=$session->get('pages');
+        $pageenCours=$pages[$index];
         $result_ocr_Repository = $doctrine->getRepository(ResultOcr::class);
-        $result_ocrs = $result_ocr_Repository->findBy(['matricule'=>$mat,'annee'=>$annee,'page'=>2]);
+        $result_ocrs = $result_ocr_Repository->findBy(['matricule'=>$session->get('matricule'),'annee'=>$session->get('annee'),'page'=>$pageenCours]);
         $data = [];
         foreach ($result_ocrs as $key => $result_ocr) {
             $data[] = [
@@ -101,9 +153,8 @@ class OcrController extends AbstractController
             ];
         }
         $data=['data'=>$data];
-        //dd($data);
         return $this->json($data);
-        //return new JsonResponse($data);
+        
     }
 ###################################################################################################################################
     // Mise a jour de code

@@ -1,31 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello UserController!{% endblock %}
+{% block title %} Application Ocr Etats financiers {% endblock %}
 
 {% block body %}
-<script>
-  
-  // Lecture des variables envoyees par symfony 
-
-  let matriculeJs= {{matricule|json_encode|raw}};
- 
-  let anneeJs= {{annee|json_encode|raw}};
- 
-</script>
 
           {% if app.user %}
           <div class="appBar">
               <div  class="message">
-              <p  class="font-weight-bold" >Bienvenue:  {{ app.user.userName }}</p>
+                <span class="badge badge-warning">Bienvenue:  {{ app.user.userName }}</span>
               </div>
               <div  class="matricule">
-                <p  class="font-weight-bold" >Matricule :  {{ matricule }}</p>
+                <span class="badge badge-dark">Matricule :  {{ app.session.get('matricule') }}</span>
               </div>
               <div  class="annee">
-                <p  class="font-weight-bold" >Annee :  {{ annee }}</p>
+                <span class="badge badge-info">Annee :  {{ app.session.get('annee') }}</span>
               </div>
+              
               <div  class="nbrpages">
-                <p  class="font-weight-bold" >Nombre de pages :  {{ nbrPages }}</p>
+                <span class="badge badge-secondary">Nombre Total des pages :  {{ app.session.get('nbrPages') }}</span>
               </div>
           <div class="deconnexion">  
            
@@ -38,10 +30,36 @@
 
 <div class="global">
         <div class="left d-4">
+          
           <canvas id="pdf-canvas"></canvas>
         </div>
         <div  class="right" >
+      <div class="page_nav">
+          {% if  app.session.get('pageEnCoursIndex') == 0  %}
 
+           <a href="{{path('get_page_precedente')}}" class="btn btn-primary disabled">precedent</a>
+
+           {% else %}
+
+           <a href="{{path('get_page_precedente')}}" class="btn btn-primary">precedent</a>
+
+
+           {% endif %}
+           {% if  app.session.get('nbrPages')-1  ==  app.session.get('pageEnCoursIndex')  %}
+
+           <a href="{{path('get_page_suivante')}}" class="btn btn-primary disabled">Suivant</a>
+
+           {% else %}
+
+           <a href="{{path('get_page_suivante')}}" class="btn btn-primary">Suivant</a>
+
+
+           {% endif %}
+
+           <div  class="pages-cours">
+            <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
+          </div>
+       </div>
                         <div class="table-responsive ">
                               <table id="sample_data" class="table table-bordered table-striped  ">
                                   <thead>

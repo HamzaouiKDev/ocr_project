@@ -1,3 +1,4 @@
+
 // Chargement du fichier PDF
 var pdfUrl = 'pdf/pdf_file.pdf';
 // Options pour pdf.js

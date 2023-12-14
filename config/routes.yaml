@@ -9,9 +9,9 @@ app_logout:
     path: /logout
     controller: App\Controller\SecurityController::logout
 
-get_users:
-    path: /getuser
-    controller: App\Controller\OcrController::getALL
+get_page:
+    path: /getpage
+    controller: App\Controller\OcrController::getPage
 
 update_code:
     path: /updatecode
@@ -41,3 +41,11 @@ update_type_page:
 get_ligne_ocr:
     path: /getLigneOcr/{matricule}/{annee}
     controller: App\Controller\OcrController::getLigneOcr
+
+get_page_suivante:
+    path: /suivant
+    controller: App\Controller\OcrController::suivante
+
+get_page_precedente:
+    path: /precedent
+    controller: App\Controller\OcrController::precedente

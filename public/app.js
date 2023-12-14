@@ -2,8 +2,6 @@
 
 
 $(document).ready(function(){
-  console.log(matriculeJs);
-  console.log(anneeJs);
 
  $('#sample_data').DataTable({
   processing: true,
@@ -16,13 +14,10 @@ $(document).ready(function(){
   //ajax: "{{path('get_users')}}",
  
   ajax: {
-    url: '/getuser',
+    url: '/getpage',
     type: "POST",
     dataSrc: "data",
-    data: function (d) {
-      d.param1=matriculeJs;
-      d.param2=anneeJs;
-    }
+   
         },
         
   // These are the column name variables that will be sent to the server
