@@ -1,6 +1,7 @@
 
 // Chargement du fichier PDF
 var pdfUrl = 'pdf/pdf_file.pdf';
+
 // Options pour pdf.js
 var options = {
     // Placez ici toutes les options spécifiques que vous voulez

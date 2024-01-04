@@ -17,8 +17,13 @@
               </div>
               
               <div  class="nbrpages">
-                <span class="badge badge-secondary">Nombre Total des pages :  {{ app.session.get('nbrPages') }}</span>
+                <span class="badge badge-secondary">Total des pages :  {{ app.session.get('nbrPages') }}</span>
               </div>
+              
+
+              <div class="update">
+              {% include "OCR/update_type_page.html.twig" %} 
+            </div>
           <div class="deconnexion">  
            
           <a href="{{ path('app_logout') }}" class="btn btn-warning">Deconnexion</a>
@@ -35,6 +40,10 @@
         </div>
         <div  class="right" >
       <div class="page_nav">
+        
+        <div  class="pages-cours">
+          <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
+        </div>
           {% if  app.session.get('pageEnCoursIndex') == 0  %}
 
            <a href="{{path('get_page_precedente')}}" class="btn btn-primary disabled">precedent</a>
@@ -56,9 +65,8 @@
 
            {% endif %}
 
-           <div  class="pages-cours">
-            <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
-          </div>
+          
+
        </div>
                         <div class="table-responsive ">
                               <table id="sample_data" class="table table-bordered table-striped  ">

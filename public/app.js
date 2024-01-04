@@ -148,6 +148,7 @@ $('#sample_data').editable({
   url: '/updateTypePage',
   title:'Type de la page',
   type:'POST',
+  source:[{value: "BILAN", text: "BILAN"}, {value: "ETAT DE RSULTAT", text: "ETAT DE RESULTAT"}],
  
 });
 /*

@@ -33,11 +33,6 @@ update_annee_n1:
     path: /updateAnneeN1
     controller: App\Controller\OcrController::updateAnneeN1
 
-
-update_type_page:
-    path: /updateTypePage
-    controller: App\Controller\OcrController::updateTypePage
-
 get_ligne_ocr:
     path: /getLigneOcr/{matricule}/{annee}
     controller: App\Controller\OcrController::getLigneOcr
@@ -49,3 +44,7 @@ get_page_suivante:
 get_page_precedente:
     path: /precedent
     controller: App\Controller\OcrController::precedente
+
+update_type_page:
+    path: /update-type-page
+    controller: App\Controller\OcrController::updateTypePage

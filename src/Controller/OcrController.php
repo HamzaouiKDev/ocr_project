@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\ResultOcr;
+use App\Form\TypePageType;
 use App\Repository\ResultOcrRepository;
 use App\Repository\EntrepriseRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,9 +17,46 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class OcrController extends AbstractController
 {
+   // Mise a jour du type de page
+    #[Route('/update-type-page', name: 'update_type_page')]
+    public function updateTypePage(Request $request, EntityManagerInterface $em):Response
+    {
+        // Lecture des variables session necessaire 
+        
+        $session = $request->getSession();
+        $mat=$session->get('matricule');
+        $ann=$session->get('annee');
+        $page=$session->get('pageEnCours'); 
+         
+        $form = $this->createForm(TypePageType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Ici, on récupère la nouvelle valeur choisie.
+           $newAttributeValue = $form->get('attribute')->getData();
+
+            // Ensuite, vous devez obtenir vos enregistrements d'une manière ou d'une autre.
+            // Par exemple, on peut utiliser un repository pour obtenir les enregistrements à mettre à jour.
+            $records = $em->getRepository(ResultOcr::class)->findBy(['matricule'=>$mat,'annee'=>$ann,'page'=>$page]);
+            // Effectuer la mise à jour de l'attribut pour chaque enregistrement.
+            foreach ($records as $record) {
+                $record->setTypePage($newAttributeValue); // Remplacer 'setAttribute' par la méthode réelle.
+            }
+            
+            // Flusher les changements dans la base de données.
+            $em->flush();
+
+            // Message flash ou autre traitement après la mise à jour.
+
+           
+        }
+        return $this->redirectToRoute('app_ocr'); // Redirigez vers une route de succès.
+       
+    }
     #[Route('/ocr', name: 'app_ocr')]
     public function index(EntrepriseRepository $entrepriseRepository,TypePageOcrRepository $typePageOcrRepository,Request $request): Response
     {
+        $form = $this->createForm(TypePageType::class);
+        $form->handleRequest($request);
         
         // selection de la premiere entreprise non valide (matricule et annee)
         $entreprise= $entrepriseRepository->findFirstInvalid();
@@ -45,7 +83,7 @@ class OcrController extends AbstractController
         $session->set('pageEnCoursIndex',0); 
         $session->set('nbrPages',$nbrPages); 
         $pdfUrl="pdf/pdf_file.pdf";
-        return $this->render('ocr/index.html.twig',['pdfUrl' =>$pdfUrl]);
+        return $this->render('ocr/index.html.twig',['pdfUrl' =>$pdfUrl, 'form' => $form->createView(),]);
     }
 // call page
 
@@ -98,6 +136,8 @@ public function callPage(EntrepriseRepository $entrepriseRepository,TypePageOcrR
 #[Route('/suivant', name: 'get_page_suivante')]
 public function suivante(ManagerRegistry $doctrine,Request $request)
 {
+    $form = $this->createForm(TypePageType::class);
+    $form->handleRequest($request);
     $session = $request->getSession();
     $index=$session->get('pageEnCoursIndex');
     $pages=$session->get('pages'); 
@@ -105,7 +145,9 @@ public function suivante(ManagerRegistry $doctrine,Request $request)
     $pageencours=$pages[$index];
     $session->set('pageEnCoursIndex',$index);
     $session->set('pageEnCours',$pageencours);
-    return $this->render('ocr/index.html.twig');
+    return $this->render('ocr/index.html.twig', [
+        'form' => $form->createView(),
+    ]);
     
 }
 
@@ -116,6 +158,8 @@ public function suivante(ManagerRegistry $doctrine,Request $request)
 #[Route('/precedent', name: 'get_page_precedente')]
 public function precedente(ManagerRegistry $doctrine,Request $request)
 {
+    $form = $this->createForm(TypePageType::class);
+    $form->handleRequest($request);
     $session = $request->getSession();
     $index=$session->get('pageEnCoursIndex');
     $pages=$session->get('pages'); 
@@ -123,7 +167,9 @@ public function precedente(ManagerRegistry $doctrine,Request $request)
     $pageencours=$pages[$index];
     $session->set('pageEnCoursIndex',$index);
     $session->set('pageEnCours',$pageencours);
-    return $this->render('ocr/index.html.twig');
+    return $this->render('ocr/index.html.twig', [
+        'form' => $form->createView(),
+    ]);
     
 }
 
@@ -273,29 +319,6 @@ public function updateCode(ManagerRegistry $doctrine) :Response
             'id' => $resultatocr->getId()
         ]);
     }
-    
-     ###################################################################################################################################
-    // Mise a jour de type page
-    ###################################################################################################################################
-    #[Route('/updateTypePage', name: 'update_type_page')]
-    public function updateTypePage(ManagerRegistry $doctrine) :Response
-    {
-        $id= $_POST['pk'];
-        $entityManager = $doctrine->getManager();
-        $resultatocr = $entityManager->getRepository(ResultOcr::class)->find($id);
-
-        if (!$resultatocr) {
-            throw $this->createNotFoundException(
-                'No product found for id '.$id
-            );
-        }
-        
-        $resultatocr->setTypePage($_POST["value"]);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('app_ocr', [
-            'id' => $resultatocr->getId()
-        ]);
-    }
+   
     }
 
