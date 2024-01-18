@@ -48,3 +48,7 @@ get_page_precedente:
 update_type_page:
     path: /update-type-page
     controller: App\Controller\OcrController::updateTypePage
+
+api_genders:
+    path: /api/coders
+    controller: App\Controller\OcrController::getCodes

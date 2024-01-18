@@ -18,15 +18,36 @@ class EntrepriseRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Entreprise::class);
     }
+    
+    public function add(Test $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(Test $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
 
     public function findFirstInvalid()
     {
         return $this->createQueryBuilder('e')
             ->andWhere('e.valide = :val')
+            ->andWhere('e.login > :val1')
             ->setParameter('val', false)
+            ->setParameter('val1', '')
             ->orderBy('e.id', 'ASC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
+   
 }

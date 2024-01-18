@@ -3,8 +3,8 @@
 {% block title %} Application Ocr Etats financiers {% endblock %}
 
 {% block body %}
-
-          {% if app.user %}
+                 <div id="page" attr="{{page}}"></div>    
+                 <div id="urlPdf" attr2="{{url}}"></div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 {% if app.user %}
           <div class="appBar">
               <div  class="message">
                 <span class="badge badge-warning">Bienvenue:  {{ app.user.userName }}</span>
@@ -16,8 +16,11 @@
                 <span class="badge badge-info">Annee :  {{ app.session.get('annee') }}</span>
               </div>
               
-              <div  class="nbrpages">
-                <span class="badge badge-secondary">Total des pages :  {{ app.session.get('nbrPages') }}</span>
+              <div  class="pageencours">
+                <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
+              </div>
+              <div  class="typepage">
+                <span class="badge badge-primary">Type Page : {{ app.session.get('typePage') }}</span>
               </div>
               
 
@@ -42,7 +45,7 @@
       <div class="page_nav">
         
         <div  class="pages-cours">
-          <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
+          
         </div>
           {% if  app.session.get('pageEnCoursIndex') == 0  %}
 
@@ -78,7 +81,6 @@
                                     <th>Notes</th>
                                     <th>Annee n</th>
                                     <th>Annee n-1</th>
-                                    <th>Type page</th>
                                     </tr>
                                   </thead>
                                   <tbody></tbody>

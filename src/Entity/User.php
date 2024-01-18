@@ -60,6 +60,12 @@ class User implements UserInterface , PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    public function __toString()
+    {
+        // Retourner une propriété qui représente l'objet en tant que chaîne
+        // Par exemple, le nom d'utilisateur (username)
+        return $this->getUsername();
+    }
 
     public function getRoles(): ?array
     {

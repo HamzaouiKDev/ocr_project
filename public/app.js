@@ -23,12 +23,12 @@ $(document).ready(function(){
   // These are the column name variables that will be sent to the server
 columnDefs: [
     { "data": "id",   "targets": 0 },
-    { "data": "code",   "targets": 1 },
+    { "data": "code", "targets": 1 },
     { "data": "label",  "targets": 2 },
     { "data": "notes",  "targets": 3 },
     { "data": "value_n",   "targets": 4 },
     { "data": "value_n1",   "targets": 5 },
-    { "data": "type_page",  "targets": 6 },
+   
 
 
 ],
@@ -40,7 +40,7 @@ columnDefs: [
       {
         $(this).attr('data-name', 'code');
         $(this).attr('class', 'code');
-        $(this).attr('data-type', 'text');
+        $(this).attr('data-type', 'select');
         $(this).attr('data-pk', data['id']);
       }
       if(colIndex == 2)
@@ -71,17 +71,18 @@ columnDefs: [
         $(this).attr('data-type', 'text');
         $(this).attr('data-pk', data['id']);
       }
-      if(colIndex == 6)
+     /* if(colIndex == 6)
       {
         $(this).attr('data-name', 'type_page');
         $(this).attr('class', 'type_page');
         $(this).attr('data-type', 'select');
         $(this).attr('data-pk',data['id']);
-      }
+      }*/
     
     });
   }
 });
+
 $('#sample_data').editable({
   mode: 'inline',
   container:'body',
@@ -89,6 +90,9 @@ $('#sample_data').editable({
   url:'/updatecode',
   title:'Code',
   type:'POST',
+  datatype: 'json',
+  source: '/api/coders', 
+
   validate:function(value){
     if($.trim(value) == '')
     {
@@ -141,7 +145,7 @@ $('#sample_data').editable({
   type:'POST',
  
 });
-$('#sample_data').editable({
+/*$('#sample_data').editable({
   mode: 'inline',
   container:'body',
   selector:'td.type_page',
@@ -150,7 +154,7 @@ $('#sample_data').editable({
   type:'POST',
   source:[{value: "BILAN", text: "BILAN"}, {value: "ETAT DE RSULTAT", text: "ETAT DE RESULTAT"}],
  
-});
+});*/
 /*
 $('#sample_data').editable({
   container:'body',

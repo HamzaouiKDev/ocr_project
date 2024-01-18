@@ -57,7 +57,11 @@ background-color: white;
 	font-size:25px;
 
 }
-.nbrpages{
+.pageencours{
+    margin-right: 50px;
+	font-size:25px;
+}
+.typepage{
     margin-right: 50px;
 	font-size:25px;
 }
