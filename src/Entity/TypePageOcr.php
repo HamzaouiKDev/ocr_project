@@ -70,6 +70,13 @@ class TypePageOcr
      */
     private $labelType;
 
+    /**
+     * @var string|null
+     *
+     * @ORM\Column(name="valide", type="string", length=50, nullable=true, options={"default"="false"})
+     */
+    private $valide = 'false';
+
     public function getId(): ?int
     {
         return $this->id;
@@ -158,6 +165,18 @@ class TypePageOcr
 
         return $this;
     }
+    public function getValide(): ?string
+    {
+        return $this->valide;
+    }
+
+    public function setValide(?string $valide): self
+    {
+        $this->valide = $valide;
+
+        return $this;
+    }
+
 
 
 }

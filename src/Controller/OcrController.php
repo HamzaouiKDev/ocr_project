@@ -6,6 +6,7 @@ use App\Entity\ResultOcr;
 use App\Entity\Entreprise;
 use App\Form\TypePageType;
 use App\Entity\TypePageOcr;
+use App\Entity\ResultOcrSauv;
 use App\Repository\ResultOcrRepository;
 use App\Repository\EntrepriseRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +30,42 @@ class OcrController extends AbstractController
         $this->security = $security;
        
     }
+    ###################################################################################################################################
+    // Sauvegarder une page
+##################################################################################################################################
+
+public function sauvegarde(Request $request,EntityManagerInterface $entityManager) 
+{
+
+    $session = $request->getSession();
+    $data=$session->get('data');
+    $matricule=$session->get('matricule');
+    $annee=$session->get('annee');
+   //dd($data);
+    $i=0;
+    foreach ($data as $donnees) {
+        if($donnees->getCode() != NULL && $donnees->getValueN() != NULL && $donnees->getValueN1() != NULL)
+        {
+        $entite = new ResultOcrSauv();
+        $entite->setMatricule($matricule);
+        $entite->setAnnee($annee);
+        $entite->setPage($donnees->getPage());
+        $entite->setLigne($donnees->getLigne());
+        $entite->setTypePage($donnees->getTypePage());
+        $entite->setLabel($donnees->getLabel());
+        $entite->setValueN($donnees->getValueN());
+        $entite->setValueN1($donnees->getValueN1());
+        $entite->setCode($donnees->getCode());
+        $i++;
+        // Répétez pour tous les champs de votre entité
+
+        $entityManager->persist($entite);
+        }
+    }
+
+    // Exécutez la requête d'insertion
+    $entityManager->flush();
+}
 ###################################################################################################################################
   // Mise a jour du type de page
 ##################################################################################################################################
@@ -79,8 +116,8 @@ class OcrController extends AbstractController
         //Recuperer l'utlisateur en cours 
         $user = $this->security->getUser();
        // dd($user);
-        // verifier si l'utlisateur en cours a un bilan non validé
-      /*  $entityManager = $this->getDoctrine()->getManager();
+        // verifier si l'utlisateur en cours a un bilan affecté a lui et non validé
+        $entityManager = $this->getDoctrine()->getManager();
         $queryBuilder = $entityManager->createQueryBuilder();
         $query = $queryBuilder
             ->select('e')
@@ -88,17 +125,16 @@ class OcrController extends AbstractController
             ->Where('e.login = :param1')
             ->andWhere('e.valide = :param')
             ->setParameter('param1',$user->getUsername())
-            ->setParameter('param', false)
+            ->setParameter('param', 'false')
             ->setMaxResults(1)
             ->getQuery();
         
-        $entreprise = $query->getOneOrNullResult();
+        $entrepriseNonValide = $query->getOneOrNullResult();
+        //dd($entreprise);
 
-       if($entreprise==NULL)
+       if($entrepriseNonValide==NULL)
 
-       {*/
-
-
+       {
         //Recuperer l'entreprise non attribué et non validé
 
         $entityManager = $this->getDoctrine()->getManager();
@@ -115,15 +151,12 @@ class OcrController extends AbstractController
         
         $entreprise = $query->getOneOrNullResult();
 
-
-        
         // selection de la premiere entreprise non valide (matricule et annee)
        // $entreprise= $entrepriseRepository->findFirstInvalid();
         //dd($entreprise);
         $matricule=$entreprise->getMatricule();
         $annee=$entreprise->getAnnee();
         $url=$entreprise->getPath();
-        
         $id=$entreprise->getId();
 
         //Attribution du bilan a l'utilisateur en cours
@@ -151,7 +184,7 @@ class OcrController extends AbstractController
         }
         //dd($pages);
         $nbrPages=count($pages);
-        // recuperer le type de lapage en cours
+        // recuperer le type de la page en cours
         $entityManager = $this->getDoctrine()->getManager();
         $queryBuilder = $entityManager->createQueryBuilder();
         $query = $queryBuilder
@@ -182,14 +215,57 @@ class OcrController extends AbstractController
         $session->set('pageEnCoursIndex',0); 
         $session->set('nbrPages',$nbrPages); 
         $session->set('url',$url); 
-        $pdfUrl="pdf/pdf_file.pdf";
+      
         
-   /* }
+    }
+    // Traitement du cas ou l'utilisateur est affecte a un bilan non encore validé
     else
     {
-        return new Response('', Response::HTTP_NO_CONTENT);  
-    }*/
-        return $this->render('ocr/index.html.twig',['pdfUrl' =>$pdfUrl, 'form' => $form->createView(),'page'=>$pages[0],'url'=>$url,]);
+        $matricule=$entrepriseNonValide->getMatricule();
+        $annee=$entrepriseNonValide->getAnnee();
+        $url=$entrepriseNonValide->getPath();
+        $id=$entrepriseNonValide->getId();
+        //dd($matricule);
+        // recuperer un tableau de pages du bilan
+
+        $typePage=$typePageOcrRepository->findPages($matricule,$annee);
+        foreach($typePage as $ligne)
+        {
+            $pages[]=$ligne->getPage();
+        }
+        //dd($pages);
+        $nbrPages=count($pages);
+         // recuperer la premiere page non valide
+         $entityManager = $this->getDoctrine()->getManager();
+         $queryBuilder = $entityManager->createQueryBuilder();
+         $query = $queryBuilder
+             ->select('p')
+             ->from('App\Entity\TypePageOcr', 'p')
+             ->where('p.matricule = :param1')
+             ->andWhere('p.annee = :param2')
+             ->setParameter('param1', $matricule)
+             ->andWhere('p.valide = :param3')
+             ->setParameter('param2', $annee)
+             ->setParameter('param3', 'false')
+             ->setMaxResults(1)
+             ->getQuery();
+         
+         $pageNonValide = $query->getOneOrNullResult();
+         //dd($pageNonValide);
+         
+         $session = $request->getSession();
+         $session->set('typePage', $pageNonValide->getLabelType());
+         $session->set('matricule',$matricule);
+         $session->set('annee',$annee);
+         $session->set('pages',$pages);
+         $session->set('pageEnCours',$pages[array_search( $pageNonValide->getPage(), $pages)]); 
+         $session->set('pageEnCoursIndex',array_search( $pageNonValide->getPage(), $pages)); 
+         $session->set('nbrPages',$nbrPages); 
+         $session->set('url',$url); 
+         return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$pages[array_search( $pageNonValide->getPage(), $pages)],'url'=>$url,]);
+        //return new Response('', Response::HTTP_NO_CONTENT);  
+    }
+        return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$pages[0],'url'=>$url,]);
     }
 // call page
 
@@ -201,8 +277,8 @@ public function callPage(EntrepriseRepository $entrepriseRepository,TypePageOcrR
 
    
     return $this->render('ocr/index.html.twig', [
-        'matricule' => $matricule,
-        'annee'=> $annee,
+        'matricule' =>$matricule,
+        'annee'=>$annee,
         'pages'=>$pages,
         'nbrPages'=>$nbrPages
     ]);
@@ -211,8 +287,8 @@ public function callPage(EntrepriseRepository $entrepriseRepository,TypePageOcrR
  // recuperer ocrResult par matricule et annee
 ##################################################################################################################################
 
-  #[Route('/getLigneOcr/{matricule}/{annee}', name: 'ligne_ocr_show')]
-  public function getLigneOcr(ManagerRegistry $doctrine, string $matricule, string $annee)
+  /*#[Route('/getLigneOcr/{matricule}/{annee}', name: 'ligne_ocr_show')]
+  public function getLigneOcr(ManagerRegistry $doctrine, string $matricule, string $annee,Request $request)
     {
         $page=6;
         $result_ocr_Repository = $doctrine->getRepository(ResultOcr::class);
@@ -233,21 +309,23 @@ public function callPage(EntrepriseRepository $entrepriseRepository,TypePageOcrR
         //dd($data);
         return $this->json($data);
         //return new JsonResponse($data);
-    }
+    }*/
 ###################################################################################################################################
     // Acceder a la page suivante
 ##################################################################################################################################
 
 #[Route('/suivant', name: 'get_page_suivante')]
-public function suivante(ManagerRegistry $doctrine,Request $request)
+public function suivante(ManagerRegistry $doctrine,Request $request,EntityManagerInterface $entityManager)
 {
+    $this->sauvegarde($request,$entityManager);
     $form = $this->createForm(TypePageType::class);
     $form->handleRequest($request);
     $session = $request->getSession();
     $index=$session->get('pageEnCoursIndex');
     $pages=$session->get('pages'); 
     $url=$session->get('url'); 
-    
+    $data=$session->get('data'); 
+    dd($data);
     if( $session->get('nbrPages')==$index+1 )
     {
         return new Response('', Response::HTTP_NO_CONTENT);
@@ -347,6 +425,7 @@ public function precedente(ManagerRegistry $doctrine,Request $request)
         $pageenCours=$pages[$index];
         $result_ocr_Repository = $doctrine->getRepository(ResultOcr::class);
         $result_ocrs = $result_ocr_Repository->findBy(['matricule'=>$session->get('matricule'),'annee'=>$session->get('annee'),'page'=>$pageenCours]);
+        $session->set('data', $result_ocrs);
         $data = [];
         foreach ($result_ocrs as $key => $result_ocr) {
             $data[] = [
@@ -360,6 +439,8 @@ public function precedente(ManagerRegistry $doctrine,Request $request)
             ];
         }
         $data=['data'=>$data];
+        
+        
         return $this->json($data);
         
     }
@@ -489,12 +570,14 @@ public function updateCode(ManagerRegistry $doctrine) :Response
  */
 public function getCodes(ManagerRegistry $doctrine,Request $request): JsonResponse
 {
+    $session = $request->getSession();
     $entityManager = $this->getDoctrine()->getManager();
     $queryBuilder = $entityManager->createQueryBuilder();
-    $queryBuilder->select('t.code')
+    $queryBuilder->select('t.code','t.label')
    ->distinct()
-   ->from('App\Entity\EfClassification', 't');
-
+   ->from('App\Entity\EfClassification', 't')
+   ->where('t.typeEf = :param1')
+   ->setParameter('param1', $session->get('typePage'));
 $result = $queryBuilder->getQuery()->getResult();
 //dd($result[0]["code"]);
 $data = [];
@@ -508,7 +591,7 @@ $data = [];
 }*/
 foreach ($result as $item) {
     $data[] = [
-        $item["code"] => $item["code"],
+        $item["code"] => $item["label"],
         
     ];
 }
@@ -517,6 +600,7 @@ foreach ($result as $item) {
 
     return $this->json($data);
 }
+
    
     }
 
