@@ -2,14 +2,48 @@
 
 
 $(document).ready(function(){
+//////////////////////////////Ajout d'une ligne/////////////////////////////////////////////////////////////////////////
+  $('#btnAjouter').click(function() {
+    $.ajax({
+      url: '/ajoutLigne', 
+      type: 'POST',
+      success: function(response) {
+          alert('Fonction du contrôleur appelée avec succès !');
+      },
+      error: function(xhr, status, error) {
+          console.log(error);
+      }
+  });
+});
 
- $('#sample_data').DataTable({
+/*$('#addForm').submit(function(e) {
+    e.preventDefault();
+    $.ajax({
+        url: '{{ path('add_new_line_route') }}', // Route Symfony pour l'ajout de la nouvelle ligne
+        method: 'POST',
+        data: $(this).serialize(), // Envoyer les données du formulaire
+        success: function(response) {
+            // Rafraîchir votre Datatable après l'ajout de la nouvelle ligne
+            $('#datatable').DataTable().ajax.reload();
+            $('#modalForm').hide(); // Cacher le formulaire modal
+        },
+        error: function(xhr, status, error) {
+            console.log(error);
+        }
+    });
+});*/
+////////////////////////////////////////////////////////////////////////////////////////////
+ var table= $('#sample_data').DataTable({
+  "order": [], // Désactiver l'ordre initial
+  "rowReorder": {
+      selector: 'tr' // Utiliser les lignes comme éléments de réorganisation
+  },
   processing: true,
   serverSide: true,
   order:[],
   scrollX: true,
   paging:false,
-
+  ordering: false,
 
   //ajax: "{{path('get_users')}}",
  
@@ -172,4 +206,19 @@ $('#sample_data').editable({
   }
 });*/
 
+table.on('row-reorder.dt', function (e, diff, edit) {
+  // Affichez le bouton d'enregistrement des modifications
+  $('#saveButton').show();
 });
+$('#saveButton').on('click', function () {
+  // Mettez à jour l'ordre dans le tableau de données sans persister dans la base de données
+  table.rows().data().each(function (data, index) {
+      var rowId = $(table.row(index).node()).data('id');
+      // Ici, vous pouvez effectuer une action comme mettre à jour l'ordre dans un tableau JavaScript temporaire
+      // Par exemple : tempArray.push({ id: rowId, order: index });
+  });
+  // Une fois les changements confirmés, masquez le bouton d'enregistrement des modifications
+  $(this).hide();
+});
+});
+

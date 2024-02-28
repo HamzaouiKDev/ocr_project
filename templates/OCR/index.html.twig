@@ -20,7 +20,14 @@
                 <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
               </div>
               <div  class="typepage">
-                <span class="badge badge-primary">Type Page : {{ app.session.get('typePage') }}</span>
+                <span class="badge badge-primary ma-class">{{ app.session.get('typePage') }}</span>
+                                  {% for type, messages in app.flashes %}
+                                          {% for message in messages %}
+                                              <div class="alert alert-{{ type }}">
+                                                  {{ message }}
+                                              </div>
+                                          {% endfor %}
+                                   {% endfor %}
               </div>
               
 
@@ -59,16 +66,21 @@
            {% endif %}
            {% if  app.session.get('nbrPages')-1  ==  app.session.get('pageEnCoursIndex')  %}
 
-           <a href="{{path('get_page_suivante')}}" class="btn btn-primary disabled">Suivant</a>
+           <a href="javascript:void(0)" onclick="myFunction();" class="btn btn-primary disabled">Valider</a>
 
            {% else %}
 
-           <a href="{{path('get_page_suivante')}}" class="btn btn-primary">Suivant</a>
+           <a href="javascript:void(0)" onclick="myFunction();" class="btn btn-primary">Valider</a>
 
 
            {% endif %}
+           <div class="add">
 
-          
+            <button id="btnAjouter">Ajouter</button>
+    
+          </div>
+  
+          <button id="saveButton" style="display: none;">Enregistrer les modifications</button>
 
        </div>
                         <div class="table-responsive ">
@@ -93,3 +105,6 @@
 
 </div>       
 {% endblock %}
+
+
+        

@@ -52,3 +52,7 @@ update_type_page:
 api_genders:
     path: /api/coders
     controller: App\Controller\OcrController::getCodes
+
+ajout_ligne:
+    path: /ajoutLigne
+    controller: App\Controller\OcrController::ajoutLigne

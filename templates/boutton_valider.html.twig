@@ -1,0 +1,10 @@
+{% if  app.session.get('nbrPages')-1  ==  app.session.get('pageEnCoursIndex')  %}
+
+<a href="{{path('get_page_suivante')}}" class="btn btn-primary disabled">Valider</a>
+
+{% else %}
+
+<a href="{{path('get_page_suivante')}}" class="btn btn-primary">Valider</a>
+
+
+{% endif %}

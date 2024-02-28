@@ -44,7 +44,7 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
    //dd($data);
     $i=0;
     foreach ($data as $donnees) {
-        if($donnees->getCode() != NULL && $donnees->getValueN() != NULL && $donnees->getValueN1() != NULL)
+        if($donnees->getCode() != NULL && ($donnees->getValueN() != NULL || $donnees->getValueN1() != NULL))
         {
         $entite = new ResultOcrSauv();
         $entite->setMatricule($matricule);
@@ -56,6 +56,7 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
         $entite->setValueN($donnees->getValueN());
         $entite->setValueN1($donnees->getValueN1());
         $entite->setCode($donnees->getCode());
+        $entite->setPath($donnees->getPath());
         $i++;
         // Répétez pour tous les champs de votre entité
 
@@ -75,32 +76,11 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
     {
         // Lecture des variables session necessaire 
         
-        $session = $request->getSession();
-        $mat=$session->get('matricule');
-        $ann=$session->get('annee');
-        $page=$session->get('pageEnCours'); 
+       
          
         $form = $this->createForm(TypePageType::class);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Ici, on récupère la nouvelle valeur choisie.
-           $newAttributeValue = $form->get('attribute')->getData();
-
-            // Ensuite, vous devez obtenir vos enregistrements d'une manière ou d'une autre.
-            // Par exemple, on peut utiliser un repository pour obtenir les enregistrements à mettre à jour.
-            $record = $em->getRepository(TypePageOcr::class)->findBy(['matricule'=>$mat,'annee'=>$ann,'page'=>$page]);
-            // Effectuer la mise à jour de l'attribut pour chaque enregistrement.
-           // dd($record);
-                $record[0]->setLabelType($newAttributeValue); 
-            
-            
-            // Flusher les changements dans la base de données.
-            $em->flush();
-
-            // Message flash ou autre traitement après la mise à jour.
-
-           
-        }
+        
         return new Response('', Response::HTTP_NO_CONTENT);
        
     }
@@ -109,10 +89,40 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
 ##################################################################################################################################
     
     #[Route('/ocr', name: 'app_ocr')]
-    public function index(EntrepriseRepository $entrepriseRepository,TypePageOcrRepository $typePageOcrRepository,Request $request,ManagerRegistry $doctrine): Response
+    public function index(EntrepriseRepository $entrepriseRepository,TypePageOcrRepository $typePageOcrRepository,Request $request,ManagerRegistry $doctrine,EntityManagerInterface $em): Response
     {
-        $form = $this->createForm(TypePageType::class);
-        $form->handleRequest($request);
+        //recuperer les type de pages pour alimenter la liste deroulante pour la mise a jour
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $query = $entityManager->createQueryBuilder()
+                            ->select('DISTINCT p.typeEf')
+                            ->from('App\Entity\EfClassification', 'p')
+                            ->getQuery();
+                    $typePages=$query->getResult();
+                    foreach($typePages as $typePage )
+                    {
+                        $data[$typePage["typeEf"]]=$typePage["typeEf"];
+                    }
+                    $typePages=$data;
+                    $form = $this->createForm(TypePageType::class , null, ['typePages' => $typePages]);
+                    $form->handleRequest($request);
+                    if ($form->isSubmitted() && $form->isValid()) {
+                        $session = $request->getSession();
+                        $mat=$session->get('matricule');
+                        $ann=$session->get('annee');
+                        $page=$session->get('pageEnCours'); 
+                        // Ici, on récupère la nouvelle valeur choisie.
+                    $newAttributeValue = $form->get('attribute')->getData();
+                    $record = $em->getRepository(TypePageOcr::class)->findBy(['matricule'=>$mat,'annee'=>$ann,'page'=>$page]);
+                    $record[0]->setLabelType($newAttributeValue); 
+                    $em->flush();
+                    $this->addFlash('success', 'Mise a jour réussie !');
+                    return $this->redirectToRoute('app_ocr');
+                   
+
+                        // Message flash ou autre traitement après la mise à jour.
+
+                    
+                    }
         //Recuperer l'utlisateur en cours 
         $user = $this->security->getUser();
        // dd($user);
@@ -315,17 +325,44 @@ public function callPage(EntrepriseRepository $entrepriseRepository,TypePageOcrR
 ##################################################################################################################################
 
 #[Route('/suivant', name: 'get_page_suivante')]
-public function suivante(ManagerRegistry $doctrine,Request $request,EntityManagerInterface $entityManager)
+public function suivante(ManagerRegistry $doctrine,Request $request,EntityManagerInterface $entityManager,EntityManagerInterface $em)
 {
     $this->sauvegarde($request,$entityManager);
-    $form = $this->createForm(TypePageType::class);
+    $entityManager = $this->getDoctrine()->getManager();
+    $query = $entityManager->createQueryBuilder()
+            ->select('DISTINCT p.typeEf')
+            ->from('App\Entity\EfClassification', 'p')
+            ->getQuery();
+    $typePages=$query->getResult();
+    foreach($typePages as $typePage )
+    {
+        $data[$typePage["typeEf"]]=$typePage["typeEf"];
+    }
+    $typePages=$data;
+    $form = $this->createForm(TypePageType::class , null, ['typePages' => $typePages]);
     $form->handleRequest($request);
+    if ($form->isSubmitted() && $form->isValid()) {
+        $session = $request->getSession();
+        $mat=$session->get('matricule');
+        $ann=$session->get('annee');
+        $page=$session->get('pageEnCours'); 
+        // Ici, on récupère la nouvelle valeur choisie.
+    $newAttributeValue = $form->get('attribute')->getData();
+    $record = $em->getRepository(TypePageOcr::class)->findBy(['matricule'=>$mat,'annee'=>$ann,'page'=>$page]);
+    $record[0]->setLabelType($newAttributeValue); 
+    $em->flush();
+    return $this->redirectToRoute('app_ocr');
+
+        // Message flash ou autre traitement après la mise à jour.
+
+    
+    }
     $session = $request->getSession();
     $index=$session->get('pageEnCoursIndex');
     $pages=$session->get('pages'); 
     $url=$session->get('url'); 
     $data=$session->get('data'); 
-    dd($data);
+    //dd($data);
     if( $session->get('nbrPages')==$index+1 )
     {
         return new Response('', Response::HTTP_NO_CONTENT);
@@ -570,37 +607,91 @@ public function updateCode(ManagerRegistry $doctrine) :Response
  */
 public function getCodes(ManagerRegistry $doctrine,Request $request): JsonResponse
 {
-    $session = $request->getSession();
-    $entityManager = $this->getDoctrine()->getManager();
-    $queryBuilder = $entityManager->createQueryBuilder();
-    $queryBuilder->select('t.code','t.label')
-   ->distinct()
-   ->from('App\Entity\EfClassification', 't')
-   ->where('t.typeEf = :param1')
-   ->setParameter('param1', $session->get('typePage'));
-$result = $queryBuilder->getQuery()->getResult();
-//dd($result[0]["code"]);
-$data = [];
+                $session = $request->getSession();
+                $entityManager = $this->getDoctrine()->getManager();
+                $queryBuilder = $entityManager->createQueryBuilder();
+                $queryBuilder->select('t.code','t.label')
+                            ->distinct()
+                            ->from('App\Entity\EfClassification', 't')
+                            ->where('t.typeEf = :param1')
+                            ->setParameter('param1', $session->get('typePage'));
+            $result = $queryBuilder->getQuery()->getResult();
+            //dd($result[0]["code"]);
+            $data = [];
 
-/*foreach ($result as $key => $result) {
-   
-    $data[] = $data+ [
-        'value' => $result["code"],
-      
-    ];
-}*/
-foreach ($result as $item) {
-    $data[] = [
-        $item["code"] => $item["label"],
+            /*foreach ($result as $key => $result) {
+            
+                $data[] = $data+ [
+                    'value' => $result["code"],
+                
+                ];
+            }*/
+            foreach ($result as $item) {
+                $data[] = [
+                    $item["code"] => $item["code"].'=>'.$item["label"],
+                    
+                ];
+            }
+            //dd($data);
+
+
+                return $this->json($data);
+}
+
+ ###################################################################################################################################
+    // Mise a jour de annee n-1
+    ###################################################################################################################################
+    #[Route('/ajoutLigne', name: 'ajout_ligne')]
+    public function ajoutLigne(ManagerRegistry $doctrine,Request $request) :Response
+    {
+        $session = $request->getSession();
+        $url=$session->get('url');
+        $matricule=$session->get('matricule');
+        $annee=$session->get('annee');
+        $page=$session->get('pageEnCours');
+        $type=$session->get('typePage');
+
+        // recuperer le Max de ligne dans la page en cours
+
+        $repository = $this->getDoctrine()->getRepository(ResultOcr::class);
+
+        $query = $repository->createQueryBuilder('e')
+            ->select('MAX(e.ligne) as maxLigne')
+            ->getQuery();
         
-    ];
-}
-//dd($data);
+        $maxLigne = $query->getSingleScalarResult();
 
 
-    return $this->json($data);
-}
+       
 
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $entity = new ResultOcr(); 
+    
+        // Définir les valeurs des champs de l'entité
+        $entity->setPath($url);
+        $entity->setMatricule($matricule);
+        $entity->setAnnee($annee);
+        $entity->setPage($page);
+        $entity->setLigne($maxLigne+1);
+        $entity->setLabel('');
+        $entity->setNotes('');
+        $entity->setValueN('');
+        $entity->setValueN1('');
+        $entity->setCode('');
+        $entity->setTypePage($type);
+        // Ajoutez autant de champs et de valeurs que nécessaire
+    
+        // Persister l'entité
+        $entityManager->persist($entity);
+    
+        // Flusher les changements en base de données
+        $entityManager->flush();
+        //return $this->redirectToRoute('current_route_name'); // Remplacez 'current_route_name' par le nom de la route actuelle
+        return new JsonResponse(['message' => 'Fonction du contrôleur appelée avec succès']);
+    }
    
     }
+
+    
 
