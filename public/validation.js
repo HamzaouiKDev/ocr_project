@@ -1,8 +1,40 @@
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function myFunction()
 {
-var table=$('#sample_data').DataTable();
-var table1= document.getElementById('sample-data');
+
+$('#sample_data tr').each(function() {
+    var identifiant = $(this).find('td').eq(1).html();
+    if (identifiant === 'EFA.01.19') {
+        $(this).addClass('highlighted-row'); // Ajoutez une classe CSS pour le style
+    }
+});
+
+
+
+
+
+
+/*var table=$('#sample_data').DataTable();
+//var table1= document.getElementById('sample-data');
 
 table.cells().every(function(){
 
@@ -20,11 +52,13 @@ if(cellData=='EFA.01.19')
             if(cellData=='EFA.01.19')
             
                  {
-                  $(cell.node()).addClass('blink-background');
+                  //$(cell.node()).addClass('blink-background');
+                 $(cell.node()).addClass('blink-background');
+                  alert(cellData);
                  }
             
             });
-      $(cell.node()).addClass('blink-background');
+      //$(cell.node()).addClass('blink-background');
      }
 
 });
@@ -45,4 +79,5 @@ if(cellData=='EFA.01.19')
 //var cellData= table.cell(0,1).data();
 //$(cell).addClass('blink-background');
 //alert(cellData);
+*/
 }

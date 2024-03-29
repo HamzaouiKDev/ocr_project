@@ -8,7 +8,7 @@ $(document).ready(function(){
       url: '/ajoutLigne', 
       type: 'POST',
       success: function(response) {
-          alert('Fonction du contrôleur appelée avec succès !');
+          alert('Ligne ajoutée avec success !');
       },
       error: function(xhr, status, error) {
           console.log(error);
@@ -34,9 +34,9 @@ $(document).ready(function(){
 });*/
 ////////////////////////////////////////////////////////////////////////////////////////////
  var table= $('#sample_data').DataTable({
-  "order": [], // Désactiver l'ordre initial
-  "rowReorder": {
-      selector: 'tr' // Utiliser les lignes comme éléments de réorganisation
+  order: [], // Désactiver l'ordre initial
+  rowReorder: {
+      selector: 'td:first-child' // Utiliser les lignes comme éléments de réorganisation
   },
   processing: true,
   serverSide: true,
@@ -44,9 +44,17 @@ $(document).ready(function(){
   scrollX: true,
   paging:false,
   ordering: false,
-
-  //ajax: "{{path('get_users')}}",
- 
+  searching: false,
+  info: false,
+  select: true,
+  language: { // Personnaliser les textes et les messages
+   
+    zeroRecords: 'Aucun enregistrement trouvé',
+    infoEmpty: 'Aucun enregistrement disponible',
+    emptyTable:'rien',
+    
+    },
+  
   ajax: {
     url: '/getpage',
     type: "POST",
