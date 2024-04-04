@@ -175,6 +175,10 @@ $('#sample_data').editable({
   url: '/updateAnneeN',
   title:'Annee N',
   type:'POST',
+  success: function(data) {
+  
+    table.draw();
+},
  
 });
 
@@ -185,6 +189,7 @@ $('#sample_data').editable({
   url: '/updateAnneeN1',
   title:'Annee N-1',
   type:'POST',
+
  
 });
 /*$('#sample_data').editable({

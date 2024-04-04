@@ -97,8 +97,18 @@ background-color:#007bff;
 100% {background-color: beige;}
 
 }
+@keyframes green {
+	0% {background-color: aliceblue;}
+	50% {background-color: green;}
+	100% {background-color: beige;}
+	
+	}
 .blink-background{
 	animation: blink 2s linear infinite;
+
+}
+.green-background{
+	animation: green 2s linear infinite;
 
 }
 
