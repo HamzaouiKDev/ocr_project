@@ -1,30 +1,258 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Se connecter {% endblock %}
+{% block title %}Se connecter{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at 20% 0%, #d2dbff 0%, #dbe2ff 40%, #f6fafc 72%, #fdfdf6 100%);
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #133b71;
+        }
+
+        .login-page * {
+            box-sizing: border-box;
+        }
+
+        .login-header {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            padding: 32px 64px;
+            background: #ffffff;
+            border-bottom: 4px solid #0a4f94;
+            box-shadow: 0 6px 18px rgba(11, 59, 122, 0.08);
+        }
+
+        .login-header__logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-badge {
+            padding: 12px 16px;
+            border: 2px solid #0d4e96;
+            border-radius: 12px;
+            background: #f8fbff;
+            text-align: center;
+            color: #0d4e96;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .logo-badge__line {
+            display: block;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .login-header__titles h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0;
+            color: #0a3670;
+        }
+
+        .login-header__titles h2 {
+            font-size: 24px;
+            margin: 4px 0 0;
+            font-weight: 500;
+            color: #1f57a6;
+        }
+
+        .login-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 16px 72px;
+        }
+
+        .login-card {
+            width: min(460px, 100%);
+            background: linear-gradient(160deg, rgba(255,255,255,0.92) 0%, rgba(245,249,255,0.95) 65%, rgba(255,255,255,0.98) 100%);
+            border-radius: 32px;
+            box-shadow: 0 28px 70px rgba(12, 59, 122, 0.15);
+            padding: 48px 48px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .login-card__head {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-card__logo {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 10px 18px;
+            border: 1px solid rgba(15,79,148,0.2);
+            border-radius: 10px;
+            background: rgba(232,239,255,0.5);
+            color: #0d4e96;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .login-card__head h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: #0a3670;
+        }
+
+        .login-card__head p {
+            margin: 0;
+            font-size: 15px;
+            color: #4f6489;
+        }
+
+        .login-alert {
+            background: rgba(230, 83, 59, 0.12);
+            border: 1px solid rgba(230, 83, 59, 0.35);
+            color: #a93226;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .login-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #123b6c;
+        }
+
+        .login-input {
+            height: 48px;
+            border-radius: 14px;
+            border: 1px solid rgba(67, 110, 185, 0.35);
+            background: rgba(235, 242, 255, 0.9);
+            padding: 0 16px;
+            font-size: 15px;
+            color: #0f2f5c;
+            outline: none;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .login-input:focus {
+            border-color: #1f57a6;
+            box-shadow: 0 0 0 4px rgba(31, 87, 166, 0.18);
+            background: #ffffff;
+        }
+
+        .login-button {
+            margin-top: 12px;
+            height: 52px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #d75a1f 0%, #c14915 100%);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(193, 73, 20, 0.35);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .login-support {
+            margin: 28px 0 0;
+            text-align: center;
+            font-size: 13px;
+            color: #5b6b8a;
+        }
+
+        @media (max-width: 720px) {
+            .login-header {
+                flex-direction: column;
+                text-align: center;
+                padding: 24px 24px 32px;
+            }
+
+            .login-header__titles h1 {
+                font-size: 28px;
+            }
+
+            .login-header__titles h2 {
+                font-size: 18px;
+            }
+
+            .login-card {
+                padding: 36px 28px 32px;
+                border-radius: 24px;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-<div class="container" style="border: 5px solid;margin-top: 100px;justify-content: center;width: 400px;border-radius: 10px;">
-<form method="post">
-    {% if error %}
-        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
+<div class="login-page">
+    <header class="login-header">
+        <div class="login-header__logo">
+            <div class="logo-badge">
+                <span class="logo-badge__line">المعهد الوطني</span>
+                <span class="logo-badge__line">للإحصاء</span>
+            </div>
+        </div>
+        <div class="login-header__titles">
+            <h1>Institut National de la Statistique</h1>
+            <h2>Application OCR Etats Financiers</h2>
+        </div>
+    </header>
+    <main class="login-main">
+        <section class="login-card">
+            <div class="login-card__head">
+                <div class="login-card__logo">
+                    <span>المعهد الوطني</span>
+                    <span>للإحصاء</span>
+                </div>
+                <h3>Institut National de la Statistique</h3>
+                <p>Accedez a l'application OCR Etats Financiers</p>
+            </div>
 
-    
+            {% if error %}
+                <div class="login-alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
 
-    <h1 class="h3 mb-3 font-weight-normal" style="border: 2px solid;text-align: center;background-color: orangered;color:white;">Authentification</h1>
-    <label for="inputUsername" >Nom d'utlisateur : </label>
-    <input type="text"  placeholder="Nom d'utlisateur" name="username" id="inputUsername" class="form-control" autocomplete="username" required autofocus style="margin-top: 20px;margin-bottom: 20px;">
-    <label for="inputPassword">Mot de passe : </label>
-    <input type="password" name="password" id="inputPassword" placeholder="Mot de passe" class="form-control" autocomplete="current-password" required style="margin-top: 20px;margin-bottom: 20px;">
+            <form method="post" class="login-form">
+                <label class="login-label" for="inputUsername">Nom d'utilisateur</label>
+                <input type="text" name="username" id="inputUsername" class="login-input" placeholder="Nom d'utilisateur" autocomplete="username" required autofocus>
 
-    <input type="hidden" name="_csrf_token"
-           value="{{ csrf_token('authenticate') }}"
-    >
-<div style="display:contents; justify-content: center;">
-    <button class="btn btn-lg btn-primary" type="submit " style="text-align: center;margin-left: 35%;margin-bottom: 30px;background-color: orangered;">
-        valider
-    </button>
-</div>
-</form>
+                <label class="login-label" for="inputPassword">Mot de passe</label>
+                <input type="password" name="password" id="inputPassword" class="login-input" placeholder="Mot de passe" autocomplete="current-password" required>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button class="login-button" type="submit">Se connecter</button>
+            </form>
+
+            <p class="login-support">Besoin d'aide ? Contactez l'administrateur de l'application.</p>
+        </section>
+    </main>
 </div>
 {% endblock %}

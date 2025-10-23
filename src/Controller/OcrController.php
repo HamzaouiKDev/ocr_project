@@ -38,9 +38,30 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
 {
 
     $session = $request->getSession();
-    $data=$session->get('data');
+    $data=$session->get('data') ?? [];
+    if (!is_iterable($data)) {
+        $data = [];
+    }
     $matricule=$session->get('matricule');
     $annee=$session->get('annee');
+    $page = $session->get('pageEnCours');
+    if ($page === null && is_iterable($data)) {
+        foreach ($data as $donneesPage) {
+            if ($donneesPage && $donneesPage->getPage() !== null) {
+                $page = $donneesPage->getPage();
+                break;
+            }
+        }
+    }
+
+    if ($matricule !== null && $annee !== null && $page !== null) {
+        $entityManager->createQuery('DELETE FROM App\Entity\ResultOcrSauv r WHERE r.matricule = :matricule AND r.annee = :annee AND r.page = :page')
+            ->setParameter('matricule', $matricule)
+            ->setParameter('annee', $annee)
+            ->setParameter('page', $page)
+            ->execute();
+    }
+
    //dd($data);
     $i=0;
     foreach ($data as $donnees) {
@@ -161,6 +182,15 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
         
         $entreprise = $query->getOneOrNullResult();
 
+        if (!$entreprise) {
+            $session = $request->getSession();
+            foreach (['typePage', 'matricule', 'annee', 'pages', 'pageEnCours', 'pageEnCoursIndex', 'nbrPages', 'url', 'data'] as $key) {
+                $session->remove($key);
+            }
+
+            return $this->render('OCR/no_more_bilan.html.twig');
+        }
+
         // selection de la premiere entreprise non valide (matricule et annee)
        // $entreprise= $entrepriseRepository->findFirstInvalid();
         //dd($entreprise);
@@ -262,17 +292,44 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
          
          $pageNonValide = $query->getOneOrNullResult();
          //dd($pageNonValide);
-         
+
          $session = $request->getSession();
-         $session->set('typePage', $pageNonValide->getLabelType());
+
+         $currentType = null;
+         $currentPage = null;
+
+         if ($pageNonValide) {
+             $currentType = $pageNonValide->getLabelType();
+             $currentPage = $pageNonValide->getPage();
+         } elseif (!empty($typePage)) {
+             $first = reset($typePage);
+             if ($first) {
+                 $currentType = $first->getLabelType();
+             }
+             $currentPage = !empty($pages) ? $pages[0] : null;
+         } else {
+             $currentPage = !empty($pages) ? $pages[0] : null;
+         }
+
+         $session->set('typePage', $currentType ?? 'N/A');
          $session->set('matricule',$matricule);
          $session->set('annee',$annee);
          $session->set('pages',$pages);
-         $session->set('pageEnCours',$pages[array_search( $pageNonValide->getPage(), $pages)]); 
-         $session->set('pageEnCoursIndex',array_search( $pageNonValide->getPage(), $pages)); 
-         $session->set('nbrPages',$nbrPages); 
-         $session->set('url',$url); 
-         return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$pages[array_search( $pageNonValide->getPage(), $pages)],'url'=>$url,]);
+
+         $pageIndex = 0;
+         if ($currentPage !== null) {
+             $foundIndex = array_search($currentPage, $pages, true);
+             if ($foundIndex !== false) {
+                 $pageIndex = $foundIndex;
+             }
+         }
+
+         $session->set('pageEnCours', $pages[$pageIndex] ?? ($currentPage ?? 0));
+         $session->set('pageEnCoursIndex', $pageIndex);
+         $session->set('nbrPages',$nbrPages);
+         $session->set('url',$url);
+         $renderPage = $pages[$pageIndex] ?? ($currentPage ?? 1);
+         return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$renderPage,'url'=>$url,]);
         //return new Response('', Response::HTTP_NO_CONTENT);  
     }
         return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$pages[0],'url'=>$url,]);
@@ -449,6 +506,39 @@ public function precedente(ManagerRegistry $doctrine,Request $request)
     
 }
 
+#[Route('/finaliser', name: 'ocr_finalize_bilan', methods: ['GET'])]
+public function finalizeBilan(Request $request, TypePageOcrRepository $typePageOcrRepository, EntrepriseRepository $entrepriseRepository, EntityManagerInterface $entityManager): Response
+{
+    $session = $request->getSession();
+    $matricule = $session->get('matricule');
+    $annee = $session->get('annee');
+
+    if (!$matricule || !$annee) {
+        $this->addFlash('error', "Aucun bilan en cours n'a ete detecte.");
+        return $this->redirectToRoute('app_ocr');
+    }
+
+    $typePages = $typePageOcrRepository->findBy(['matricule' => $matricule, 'annee' => $annee]);
+    foreach ($typePages as $typePage) {
+        $typePage->setValide('true');
+    }
+
+    $entreprise = $entrepriseRepository->findOneBy(['matricule' => $matricule, 'annee' => $annee]);
+    if ($entreprise) {
+        $entreprise->setValide('true');
+    }
+
+    $entityManager->flush();
+
+    foreach (['typePage', 'matricule', 'annee', 'pages', 'pageEnCours', 'pageEnCoursIndex', 'nbrPages', 'url', 'data'] as $key) {
+        $session->remove($key);
+    }
+
+    $this->addFlash('success', 'Le bilan a ete valide avec succes.');
+
+    return $this->redirectToRoute('app_ocr');
+}
+ 
 ###################################################################################################################################
     //Fonction pour recuperer une page
 ##################################################################################################################################
@@ -637,6 +727,43 @@ public function getCodes(ManagerRegistry $doctrine,Request $request): JsonRespon
 
                 return $this->json($data);
 }
+
+###################################################################################################################################
+    // Suppression d'une ligne
+###################################################################################################################################
+    #[Route('/supprimerLigne', name: 'supprimer_ligne', methods: ['POST'])]
+    public function supprimerLigne(Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        $id = $request->request->get('id');
+        if (!$id) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Identifiant manquant'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $entityManager = $doctrine->getManager();
+        $repository = $entityManager->getRepository(ResultOcr::class);
+        $ligne = $repository->find($id);
+
+        if (!$ligne) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Ligne introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        $matricule = $ligne->getMatricule();
+        $annee = $ligne->getAnnee();
+        $page = $ligne->getPage();
+
+        $entityManager->remove($ligne);
+        $entityManager->flush();
+
+        if ($matricule !== null && $annee !== null && $page !== null) {
+            $resultats = $repository->findBy(
+                ['matricule' => $matricule, 'annee' => $annee, 'page' => $page],
+                ['ligne' => 'ASC']
+            );
+            $request->getSession()->set('data', $resultats);
+        }
+
+        return new JsonResponse(['status' => 'ok']);
+    }
 
  ###################################################################################################################################
     // Mise a jour de annee n-1

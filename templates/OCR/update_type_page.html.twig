@@ -1,13 +1,14 @@
-{{ form_start(form) }}
-<div class="form-row align-items-center">
-   
-    <div class="col-auto">
-{{ form_row(form.attribute) }}
-    </div>
-     <div class="col-auto">
-<button class="btn btn-primary mb-2" type="submit">Mettre a jour</button>
-    </div>
-</div>
-
+{{ form_start(form, {
+    'attr': {'class': 'update-type-form'},
+    'action': path('update_type_page')
+}) }}
+    {{ form_widget(form.attribute, {
+        'attr': {'class': 'update-type-form__select'}
+    }) }}
+    {{ form_errors(form.attribute) }}
+    <button class="update-type-form__submit" type="submit">
+        Mettre à jour
+    </button>
 {{ form_end(form) }}
-   
+
+

@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pas de bilan non valide{% endblock %}
+
+{% block body %}
+{% set flash_messages = [] %}
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        {% set flash_messages = flash_messages|merge([{ 'type': type, 'message': message }]) %}
+    {% endfor %}
+{% endfor %}
+
+<div class="ocr-app ocr-app--empty">
+    <div class="ocr-empty-screen">
+        <div class="ocr-empty-screen__glow"></div>
+        <div class="ocr-empty-card">
+            <div class="ocr-empty-card__badge">
+                <span class="ocr-empty-card__badge-dot"></span>
+                Traitement terminé
+            </div>
+            <div class="ocr-empty-card__icon">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            </div>
+            <h1 class="ocr-empty-card__title">Tous les bilans sont validés</h1>
+            <p class="ocr-empty-card__subtitle">
+                Bravo&nbsp;! Vous êtes à jour. Nous vous préviendrons automatiquement dès qu’un nouvel état financier nécessitera une validation.
+            </p>
+
+            {% if flash_messages is not empty %}
+                <div class="flash-stack ocr-empty-card__flash">
+                    {% for flash in flash_messages %}
+                        <div class="flash-message {{ flash.type }}">{{ flash.message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="ocr-empty-card__cta">
+                <a href="{{ path('app_ocr') }}" class="action-btn action-btn--primary">
+                    Revenir à l'accueil
+                </a>
+                <a href="{{ path('app_logout') }}" class="action-btn action-btn--ghost">
+                    Se déconnecter
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,110 +1,198 @@
 {% extends 'base.html.twig' %}
 
-{% block title %} Application Ocr Etats financiers {% endblock %}
+{% block title %}Application OCR - Etats financiers{% endblock %}
 
 {% block body %}
-                 <div id="page" attr="{{page}}"></div>    
-                 <div id="urlPdf" attr2="{{url}}"></div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 {% if app.user %}
-          <div class="appBar">
-              <div  class="message">
-                <span class="badge badge-warning">Bienvenue:  {{ app.user.userName }}</span>
-              </div>
-              <div  class="matricule">
-                <span class="badge badge-dark">Matricule :  {{ app.session.get('matricule') }}</span>
-              </div>
-              <div  class="annee">
-                <span class="badge badge-info">Annee :  {{ app.session.get('annee') }}</span>
-              </div>
-              
-              <div  class="pageencours">
-                <span class="badge badge-success">Page en cours : {{ app.session.get('pageEnCours') }}</span>
-              </div>
-              <div  class="typepage">
-                <span class="badge badge-primary ma-class">{{ app.session.get('typePage') }}</span>
-                                  {% for type, messages in app.flashes %}
-                                          {% for message in messages %}
-                                              <div class="alert alert-{{ type }}">
-                                                  {{ message }}
-                                              </div>
-                                          {% endfor %}
-                                   {% endfor %}
-              </div>
-              
+{% set raw_pdf_url = url|default('') %}
+{% set normalized_pdf_url = '' %}
+{% if raw_pdf_url is not empty %}
+    {% if raw_pdf_url starts with 'http://' or raw_pdf_url starts with 'https://' %}
+        {% set normalized_pdf_url = raw_pdf_url %}
+    {% else %}
+        {% set trimmed_pdf_url = raw_pdf_url starts with './' ? raw_pdf_url|slice(2) : raw_pdf_url %}
+        {% set trimmed_pdf_url = trimmed_pdf_url|replace({'\\': '/'}) %}
+        {% set trimmed_pdf_url = trimmed_pdf_url starts with '/' ? trimmed_pdf_url|slice(1) : trimmed_pdf_url %}
+        {% set normalized_pdf_url = asset(trimmed_pdf_url) %}
+    {% endif %}
+{% endif %}
+<div id="page" attr="{{ page|default(1) }}"></div>
+<div id="urlPdf" attr2="{{ normalized_pdf_url }}"></div>
 
-              <div class="update">
-              {% include "OCR/update_type_page.html.twig" %} 
+{% set user_name = app.user ? app.user.username : 'Invite' %}
+{% set matricule = app.session.get('matricule') ?? 'N/A' %}
+{% set annee = app.session.get('annee') ?? 'N/A' %}
+{% set type_page_label = app.session.get('typePage') ?? 'N/A' %}
+{% set type_chip_classes = {
+    'BILAN':        'summary-chip--type summary-chip--type-bilan',
+    'RESULTAT':     'summary-chip--type summary-chip--type-resultat',
+    'TRESORERIE':   'summary-chip--type summary-chip--type-tresorerie',
+    'SIG':          'summary-chip--type summary-chip--type-sig',
+    'AMORTISSEMENT':'summary-chip--type summary-chip--type-amortissement'
+} %}
+{% set type_chip_class = type_chip_classes[type_page_label|upper] ?? 'summary-chip--type summary-chip--type-default' %}
+{% set page_en_cours = app.session.get('pageEnCours') ?? 'N/A' %}
+{% set page_index = (app.session.get('pageEnCoursIndex') ?? 0) + 1 %}
+{% set nbr_pages = app.session.get('nbrPages') %}
+
+{% set flash_messages = [] %}
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        {% set flash_messages = flash_messages|merge([{ 'type': type, 'message': message }]) %}
+    {% endfor %}
+{% endfor %}
+
+{% set is_first_page = app.session.get('pageEnCoursIndex') == 0 %}
+{% set is_last_page = app.session.get('nbrPages') - 1 == app.session.get('pageEnCoursIndex') %}
+{% set previous_href = is_first_page ? 'javascript:void(0);' : path('get_page_precedente') %}
+{% set next_href = is_last_page ? 'javascript:void(0);' : path('get_page_suivante') %}
+
+<div class="ocr-app">
+    <header class="ocr-app__topbar">
+        <div class="topbar__logo">
+            <div class="logo-block">
+                <span class="logo-block__top">المعهد الوطني</span>
+                <span class="logo-block__bottom">للإحصاء</span>
             </div>
-          <div class="deconnexion">  
-           
-          <a href="{{ path('app_logout') }}" class="btn btn-warning">Deconnexion</a>
-          </div>
-          
-          </div>
-
-          {% endif %}
-
-<div class="global">
-        <div class="left d-4">
-          
-          <canvas id="pdf-canvas"></canvas>
         </div>
-        <div  class="right" >
-      <div class="page_nav">
-        
-        <div  class="pages-cours">
-          
+        <div class="topbar__titles">
+            <h1>Institut National de la Statistique</h1>
+            <h2>Application OCR États Financiers</h2>
         </div>
-          {% if  app.session.get('pageEnCoursIndex') == 0  %}
+        <div class="topbar__user">
+            <span class="user-pill">👋 {{ user_name }}</span>
+            {% if app.user %}
+                <a href="{{ path('app_logout') }}" class="logout-btn">Déconnexion</a>
+            {% endif %}
+        </div>
+    </header>
 
-           <a href="{{path('get_page_precedente')}}" class="btn btn-primary disabled">precedent</a>
+    <section class="ocr-app__summary">
+        <div class="summary-chips">
+            <div class="summary-chip summary-chip--welcome">Bienvenue : {{ user_name|upper }}</div>
+            <div class="summary-chip">Matricule : {{ matricule }}</div>
+            <div class="summary-chip">Année : {{ annee }}</div>
+            <div class="summary-chip">Page en cours : {{ page_en_cours }}</div>
+            <div class="summary-chip {{ type_chip_class }}">{{ type_page_label|upper }}</div>
+        </div>
+        <div class="summary-form">
+            {% include 'OCR/update_type_page.html.twig' with {'form': form} %}
+        </div>
+    </section>
 
-           {% else %}
+    <div class="ocr-app__workspace">
+        <div class="ocr-resize-container" data-resize-container>
+            <section class="viewer-panel" data-pane="viewer">
+                <div class="viewer-card">
+                    <div class="viewer-card__toolbar">
+                        <div class="viewer-card__nav">
+                            <button type="button" id="pdf-prev" class="viewer-btn">
+                                &larr; Précédent
+                            </button>
+                            <div class="viewer-card__page">
+                                <span>Page</span>
+                                <strong id="pdf-page-indicator">
+                                    {% if nbr_pages is not null %}
+                                        {{ page_index }} / {{ nbr_pages }}
+                                    {% else %}
+                                        {{ page_index }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <button type="button" id="pdf-next" class="viewer-btn">
+                                Suivant &rarr;
+                            </button>
+                        </div>
+                        <div class="viewer-card__controls">
+                            <div class="viewer-zoom">
+                                <button type="button" id="pdf-zoom-out" class="viewer-pill viewer-pill--compact">&minus;</button>
+                                <span class="viewer-pill viewer-pill--info" id="pdf-zoom-indicator">100%</span>
+                                <button type="button" id="pdf-zoom-in" class="viewer-pill viewer-pill--compact">+</button>
+                            </div>
+                            <div class="viewer-rotate">
+                                <button type="button" id="pdf-rotate" class="viewer-pill viewer-pill--compact">Rotation</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="viewer-card__stage">
+                        <div class="viewer-frame">
+                            <canvas id="pdf-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-           <a href="{{path('get_page_precedente')}}" class="btn btn-primary">precedent</a>
+            <div class="ocr-resizer" role="separator" aria-orientation="vertical" aria-label="Redimensionner les panneaux" tabindex="0" data-resizer>
+                <span class="ocr-resizer__handle"></span>
+            </div>
 
+            <section class="table-panel" data-pane="table">
+                <div class="table-card">
+                    <div class="table-card__toolbar">
+                        <div class="table-card__buttons">
+                            <a href="{{ previous_href }}" class="action-btn action-btn--ghost {% if is_first_page %}action-btn--disabled{% endif %}" {% if is_first_page %}onclick="return false;" aria-disabled="true"{% endif %}>
+                                Précédent
+                            </a>
+                            <a
+                                href="javascript:void(0);"
+                                class="action-btn action-btn--primary"
+                                data-last-page="{{ is_last_page ? '1' : '0' }}"
+                                data-next-url="{{ path('get_page_suivante') }}"
+                                data-finalize-url="{{ path('ocr_finalize_bilan') }}"
+                                onclick="return myFunction(this);">
+                                Valider
+                            </a>
+                            <button id="btnAjouter" type="button" class="action-btn action-btn--secondary">
+                                Ajouter
+                            </button>
+                            <button id="saveButton" type="button" class="action-btn action-btn--ghost" style="display: none;">
+                                Enregistrer
+                            </button>
+                        </div>
+                        <div class="table-card__meta">
+                            <span class="table-card__meta-item">
+                                <span>Page :</span>
+                                <strong id="table-page-indicator" aria-live="polite">
+                                    {% if nbr_pages is not null %}
+                                        {{ page_index }} / {{ nbr_pages }}
+                                    {% else %}
+                                        {{ page_index }}
+                                    {% endif %}
+                                </strong>
+                            </span>
+                            <span class="table-card__meta-item">
+                                <span>Fichier :</span>
+                                <strong>{{ url is not empty ? url|split('/')|last : 'N/A' }}</strong>
+                            </span>
+                        </div>
+                    </div>
 
-           {% endif %}
-           {% if  app.session.get('nbrPages')-1  ==  app.session.get('pageEnCoursIndex')  %}
+                    {% if flash_messages is not empty %}
+                        <div class="flash-stack">
+                            {% for flash in flash_messages %}
+                                <div class="flash-message {{ flash.type }}">{{ flash.message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-           <a href="javascript:void(0)" onclick="myFunction();" class="btn btn-primary disabled">Valider</a>
-
-           {% else %}
-
-           <a href="javascript:void(0)" onclick="myFunction();" class="btn btn-primary">Valider</a>
-
-
-           {% endif %}
-           <div class="add">
-
-            <button id="btnAjouter">Ajouter</button>
-    
-          </div>
-  
-          <button id="saveButton" style="display: none;">Enregistrer les modifications</button>
-
-       </div>
-                        <div class="table-responsive ">
-                              <table id="sample_data" class="table table-bordered table-striped  ">
-                                  <thead>
-                                    <tr>
+                    <div class="table-card__table">
+                        <table id="sample_data" class="ocr-table">
+                            <thead>
+                                <tr>
                                     <th>ID</th>
                                     <th>Code</th>
                                     <th>Label</th>
                                     <th>Notes</th>
-                                    <th>Annee n</th>
-                                    <th>Annee n-1</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody></tbody>
-                              </table>
-            
-          
-                        </div>  
-            
-       </div>
-
-</div>       
+                                    <th>Année N</th>
+                                    <th>Année N-1</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
 {% endblock %}
-
-
-        

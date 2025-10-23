@@ -56,3 +56,7 @@ api_genders:
 ajout_ligne:
     path: /ajoutLigne
     controller: App\Controller\OcrController::ajoutLigne
+reorder_lignes:
+    path: /reorderLignes
+    controller: App\Controller\OcrController::reorderLignes
+    methods: [POST]
