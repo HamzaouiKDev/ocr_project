@@ -1,0 +1,31 @@
+﻿<div class="admin-stats-grid">
+    <div class="admin-stat-card">
+        <span class="admin-stat-card__label">Bilans assignes</span>
+        <span class="admin-stat-card__value">{{ stats.assignedTotal }}</span>
+        <span class="admin-stat-card__hint">{{ stats.assignedShare }}% du volume global</span>
+    </div>
+    <div class="admin-stat-card">
+        <span class="admin-stat-card__label">Bilans valides</span>
+        <span class="admin-stat-card__value">{{ stats.validated }}</span>
+        <span class="admin-stat-card__hint">{{ stats.completionRate }}% du volume global</span>
+    </div>
+    <div class="admin-stat-card admin-stat-card--highlight">
+        <span class="admin-stat-card__label">Bilans en attente</span>
+        <span class="admin-stat-card__value">{{ stats.pending }}</span>
+        <span class="admin-stat-card__hint">{{ stats.remainingRate }}% restant a traiter</span>
+    </div>
+    {% if stats.unassignedTotal > 0 %}
+        <div class="admin-stat-card admin-stat-card--muted">
+            <span class="admin-stat-card__label">Bilans non assignes</span>
+            <span class="admin-stat-card__value">{{ stats.unassignedTotal }}</span>
+            <span class="admin-stat-card__hint">Aucun agent associe</span>
+        </div>
+    {% endif %}
+    {% if stats.topPerformer %}
+        <div class="admin-stat-card admin-stat-card--accent">
+            <span class="admin-stat-card__label">Top agent</span>
+            <span class="admin-stat-card__value">{{ stats.topPerformer.username }}</span>
+            <span class="admin-stat-card__hint">{{ stats.topPerformer.validated }} bilans - {{ stats.topPerformer.globalRate }}% du total</span>
+        </div>
+    {% endif %}
+</div>

@@ -329,9 +329,23 @@ public function sauvegarde(Request $request,EntityManagerInterface $entityManage
          $session->set('nbrPages',$nbrPages);
          $session->set('url',$url);
          $renderPage = $pages[$pageIndex] ?? ($currentPage ?? 1);
+         $currentTypeForForm = $session->get('typePage');
+         if ($form->has('attribute') && is_string($currentTypeForForm)) {
+             $normalizedType = trim($currentTypeForForm);
+             if ($normalizedType !== '' && strcasecmp($normalizedType, 'N/A') !== 0) {
+                 $form->get('attribute')->setData($normalizedType);
+             }
+         }
          return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$renderPage,'url'=>$url,]);
         //return new Response('', Response::HTTP_NO_CONTENT);  
     }
+        $currentTypeForForm = $session->get('typePage');
+        if ($form->has('attribute') && is_string($currentTypeForForm)) {
+            $normalizedType = trim($currentTypeForForm);
+            if ($normalizedType !== '' && strcasecmp($normalizedType, 'N/A') !== 0) {
+                $form->get('attribute')->setData($normalizedType);
+            }
+        }
         return $this->render('ocr/index.html.twig',[ 'form' => $form->createView(),'page'=>$pages[0],'url'=>$url,]);
     }
 // call page
@@ -449,6 +463,13 @@ public function suivante(ManagerRegistry $doctrine,Request $request,EntityManage
     $session->set('pageEnCoursIndex',$index);
     $session->set('pageEnCours',$pageencours);
     }
+    $currentTypeForForm = $session->get('typePage');
+    if ($form->has('attribute') && is_string($currentTypeForForm)) {
+        $normalizedType = trim($currentTypeForForm);
+        if ($normalizedType !== '' && strcasecmp($normalizedType, 'N/A') !== 0) {
+            $form->get('attribute')->setData($normalizedType);
+        }
+    }
     return $this->render('ocr/index.html.twig', [
         'form' => $form->createView(),'page'=>$pageencours,'url'=>$url,
     ]);
@@ -497,6 +518,13 @@ public function precedente(ManagerRegistry $doctrine,Request $request)
     $pageencours=$pages[$index];
     $session->set('pageEnCoursIndex',$index);
     $session->set('pageEnCours',$pageencours);
+    }
+    $currentTypeForForm = $session->get('typePage');
+    if ($form->has('attribute') && is_string($currentTypeForForm)) {
+        $normalizedType = trim($currentTypeForForm);
+        if ($normalizedType !== '' && strcasecmp($normalizedType, 'N/A') !== 0) {
+            $form->get('attribute')->setData($normalizedType);
+        }
     }
     return $this->render('ocr/index.html.twig', [
         'form' => $form->createView(),

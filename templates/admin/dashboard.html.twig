@@ -1,0 +1,149 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Espace Admin{% endblock %}
+
+{% block body %}
+<div class="admin-portal">
+    {% if isAdmin %}
+        <section class="admin-hero">
+            <div class="admin-hero__content">
+                <span class="admin-hero__eyebrow">Console OCR</span>
+                <h1>Bonjour {{ adminName is not empty ? adminName : 'ADMIN' }}</h1>
+                <p class="admin-hero__subtitle">
+                    Vision globale des bilans numerises. Pilotez l'avancement, identifiez les points de friction et celebrez les meilleures performances.
+                </p>
+
+                {% if stats is not empty %}
+                    <div class="admin-progress">
+                        <div class="admin-progress__header">
+                            <span>Progression globale</span>
+                            <span>{{ stats.completionRate }}% valide</span>
+                        </div>
+                        <div class="admin-progress__track">
+                            <div class="admin-progress__fill" style="--progress: {{ stats.completionRate }}%;"></div>
+                        </div>
+                        <div class="admin-progress__meta">
+                            <span>{{ stats.validated }} valides</span>
+                            <span>{{ stats.pending }} en attente ({{ stats.remainingRate }}%)</span>
+                        </div>
+                    </div>
+
+                    {% if stats.topPerformer %}
+                        <div class="admin-highlight">
+                            <span class="admin-highlight__label">Top agent</span>
+                            <div class="admin-highlight__body">
+                                <strong>{{ stats.topPerformer.username }}</strong>
+                                <p>{{ stats.topPerformer.validated }} bilans valides - {{ stats.topPerformer.globalRate }}% du total</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <a href="{{ path('app_logout') }}" class="admin-hero__logout">Se deconnecter</a>
+            </div>
+
+            <div class="admin-hero__metrics">
+                {% if stats is not empty %}
+                    {% include 'admin/partials/_stats_overview.html.twig' with {'stats': stats} %}
+                {% else %}
+                    <p class="admin-empty">Aucune donnee disponible pour le moment.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        {% if stats.perUser is not empty %}
+            <section class="admin-panel">
+                <div class="admin-panel__header">
+                    <h2>Validation par agent</h2>
+                    <p>Nombre de bilans affectes et valides, avec la part de validation sur le global.</p>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Bilans affectes</th>
+                                <th>Bilans valides</th>
+                                <th>% global</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in stats.perUser %}
+                                <tr class="{{ stats.topPerformer and row.username == stats.topPerformer.username ? 'is-leader' : '' }}">
+                                    <td>
+                                        <div class="admin-user-cell">
+                                            <span class="admin-user-cell__name">{{ row.username }}</span>
+                                            {% if stats.topPerformer and row.username == stats.topPerformer.username %}
+                                                <span class="admin-badge">Top performer</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>{{ row.assigned }}</td>
+                                    <td>{{ row.validated }}</td>
+                                    <td>{{ row.globalRate }}%</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% endif %}
+    {% else %}
+        <section class="admin-login">
+            <div class="admin-login__card">
+                <span class="admin-login__badge">Acces Administrateur</span>
+                <h1 class="admin-login__title">Espace de supervision</h1>
+                <p class="admin-login__subtitle">
+                    Connectez-vous avec des identifiants administrateur pour acceder a la console de pilotage OCR.
+                </p>
+                {% if loginError %}
+                    <div class="admin-login__alert">{{ loginError.messageKey|trans(loginError.messageData, 'security') }}</div>
+                {% endif %}
+
+                <form method="post" action="{{ path('app_login') }}" class="admin-login__form">
+                    <input type="hidden" name="_target_path" value="{{ path('admin_dashboard') }}">
+                    <label class="admin-login__label" for="adminUsername">Nom d'utilisateur</label>
+                    <input
+                        type="text"
+                        id="adminUsername"
+                        name="username"
+                        class="admin-login__input"
+                        value="{{ lastUsername }}"
+                        autocomplete="username"
+                        required
+                        autofocus
+                        placeholder="Identifiant administrateur">
+
+                    <label class="admin-login__label" for="adminPassword">Mot de passe</label>
+                    <input
+                        type="password"
+                        id="adminPassword"
+                        name="password"
+                        class="admin-login__input"
+                        autocomplete="current-password"
+                        required
+                        placeholder="Mot de passe">
+
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <button type="submit" class="admin-login__button">Se connecter</button>
+                </form>
+
+                {% if app.user and not isAdmin %}
+                    <p class="admin-login__hint">
+                        Vous etes connecte en tant que <strong>{{ app.user.userIdentifier|default('Utilisateur') }}</strong>.
+                        Cette zone est reservee aux administrateurs.
+                    </p>
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+
+

@@ -75,7 +75,12 @@
             <div class="summary-chip {{ type_chip_class }}">{{ type_page_label|upper }}</div>
         </div>
         <div class="summary-form">
-            {% include 'OCR/update_type_page.html.twig' with {'form': form} %}
+            {% include 'OCR/update_type_page.html.twig' with {
+                'form': form,
+                'matricule': matricule,
+                'annee': annee,
+                'pageEnCours': page_en_cours
+            } %}
         </div>
     </section>
 

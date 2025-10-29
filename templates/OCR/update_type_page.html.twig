@@ -1,14 +1,16 @@
-{{ form_start(form, {
+﻿{{ form_start(form, {
     'attr': {'class': 'update-type-form'},
-    'action': path('update_type_page')
+    'action': path('page_update_type'),
+    'method': 'POST'
 }) }}
+    <input type="hidden" name="matricule" value="{{ matricule is defined and matricule != 'N/A' ? matricule : '' }}">
+    <input type="hidden" name="annee" value="{{ annee is defined and annee != 'N/A' ? annee : '' }}">
+    <input type="hidden" name="page" value="{{ pageEnCours is defined and pageEnCours != 'N/A' ? pageEnCours : '' }}">
     {{ form_widget(form.attribute, {
         'attr': {'class': 'update-type-form__select'}
     }) }}
     {{ form_errors(form.attribute) }}
     <button class="update-type-form__submit" type="submit">
-        Mettre à jour
+        Mettre a jour
     </button>
 {{ form_end(form) }}
-
-
